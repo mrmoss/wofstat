@@ -320,7 +320,12 @@ netstat_list_t netstat_parse(const std::string& proto,const std::string& data,co
 
 		netstat.local_port=hex_to_port(table[ii][2]);
 		netstat.foreign_port=hex_to_port(table[ii][4]);
-		netstat.state=hex_to_state(table[ii][5]);
+
+		if(proto=="udp4"||proto=="udp6")
+			netstat.state="-";
+		else
+			netstat.state=hex_to_state(table[ii][5]);
+
 		netstat.inode=table[ii][13];
 		netstat.pid="-";
 		netstats.push_back(netstat);

@@ -286,7 +286,7 @@ std::string hex_to_state(const std::string& hex)
 	return states[state];
 }
 
-netstat_list_t netstat_parse(const std::string& proto,const std::string& data,const lookup_list_t& pid_lookups)
+netstat_list_t netstat_linux_parse(const std::string& proto,const std::string& data,const lookup_list_t& pid_lookups)
 {
 	table_t table;
 	list_t lines=string_to_lines(data);
@@ -349,7 +349,7 @@ netstat_list_t netstat_parse(const std::string& proto,const std::string& data,co
 	return netstats;
 }
 
-netstat_list_t netstat_read()
+netstat_list_t netstat_linux()
 {
 	lookup_list_t pid_lookups;
 	list_t directories=list_directories("/proc");
@@ -382,28 +382,37 @@ netstat_list_t netstat_read()
 
 	if(!file_to_string("/proc/net/tcp",tcp4_data))
 		throw std::runtime_error("Could not read file named \"/proc/net/tcp\".");
-	if(!file_to_string("/proc/net/tcp6",tcp6_data))
-		throw std::runtime_error("Could not read file named \"/proc/net/tcp6\".");
 	if(!file_to_string("/proc/net/udp",udp4_data))
 		throw std::runtime_error("Could not read file named \"/proc/net/udp\".");
-	if(!file_to_string("/proc/net/udp6",udp6_data))
-		throw std::runtime_error("Could not read file named \"/proc/net/udp6\".");
 
-	netstat_list_t tcp4=netstat_parse("tcp4",tcp4_data,pid_lookups);
-	netstat_list_t tcp6=netstat_parse("tcp6",tcp6_data,pid_lookups);
-	netstat_list_t udp4=netstat_parse("udp4",udp4_data,pid_lookups);
-	netstat_list_t udp6=netstat_parse("udp6",udp6_data,pid_lookups);
+	netstat_list_t tcp4=netstat_linux_parse("tcp4",tcp4_data,pid_lookups);
+	netstat_list_t tcp6;
+	netstat_list_t udp4=netstat_linux_parse("udp4",udp4_data,pid_lookups);
+	netstat_list_t udp6;
+
+	bool ipv6_support=file_to_string("/proc/net/tcp6",tcp6_data)&&file_to_string("/proc/net/udp6",udp6_data);
+
+	if(ipv6_support)
+	{
+		tcp6=netstat_linux_parse("tcp6",tcp6_data,pid_lookups);
+		udp6=netstat_linux_parse("udp6",udp6_data,pid_lookups);
+	}
 
 	netstat_list_t netstats;
 
 	for(size_t ii=0;ii<tcp4.size();++ii)
 		netstats.push_back(tcp4[ii]);
-	for(size_t ii=0;ii<tcp6.size();++ii)
-		netstats.push_back(tcp6[ii]);
+
+	if(ipv6_support)
+		for(size_t ii=0;ii<tcp6.size();++ii)
+			netstats.push_back(tcp6[ii]);
+
 	for(size_t ii=0;ii<udp4.size();++ii)
 		netstats.push_back(udp4[ii]);
-	for(size_t ii=0;ii<udp6.size();++ii)
-		netstats.push_back(udp6[ii]);
+
+	if(ipv6_support)
+		for(size_t ii=0;ii<udp6.size();++ii)
+			netstats.push_back(udp6[ii]);
 
 	return netstats;
 }
@@ -435,7 +444,7 @@ void netstat_list_print(const netstat_list_t& netstats)
 
 int main()
 {
-	netstat_list_t netstats=netstat_read();
+	netstat_list_t netstats=netstat_linux();
 	netstat_list_print(netstats);
 
 	return 0;

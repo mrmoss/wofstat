@@ -408,7 +408,18 @@ netstat_list_t netstat_read()
 	return netstats;
 }
 
-void netstat_print(const netstat_list_t& netstats)
+void netstat_print(const netstat_t& netstat)
+{
+	std::cout<<
+		std::setw(4)<<netstat.proto<<" "<<
+		std::setw(64)<<netstat.local_address+":"+netstat.local_port<<" "<<
+		std::setw(64)<<netstat.foreign_address+":"+netstat.foreign_port<<" "<<
+		std::setw(16)<<netstat.state<<" "<<
+		std::setw(8)<<netstat.pid<<" "<<
+		std::endl;
+}
+
+void netstat_list_print(const netstat_list_t& netstats)
 {
 	std::cout<<
 		std::setw(4)<<"proto "<<
@@ -419,21 +430,13 @@ void netstat_print(const netstat_list_t& netstats)
 		std::endl;
 
 	for(size_t ii=0;ii<netstats.size();++ii)
-	{
-		std::cout<<
-			std::setw(4)<<netstats[ii].proto<<" "<<
-			std::setw(64)<<netstats[ii].local_address+":"+netstats[ii].local_port<<" "<<
-			std::setw(64)<<netstats[ii].foreign_address+":"+netstats[ii].foreign_port<<" "<<
-			std::setw(16)<<netstats[ii].state<<" "<<
-			std::setw(8)<<netstats[ii].pid<<" "<<
-			std::endl;
-	}
+		netstat_print(netstats[ii]);
 }
 
 int main()
 {
 	netstat_list_t netstats=netstat_read();
-	netstat_print(netstats);
+	netstat_list_print(netstats);
 
 	return 0;
 }

@@ -1,5 +1,6 @@
 //-liphlpapi
 
+#include <Ws2spi.h>
 #include <Windows.h>
 #include <Iphlpapi.h>
 
@@ -75,6 +76,17 @@ std::string uint32_t_to_ipv4(const uint32_t address)
 		(uint32_t)((uint8_t*)&address)[2]<<"."<<
 		(uint32_t)((uint8_t*)&address)[3];
 	return ostr.str();
+}
+
+std::string uint8_t_16_to_ipv6(const uint8_t address[16])
+{
+	/*std::ostringstream ostr;
+	ostr<<(uint32_t)((uint8_t*)&address)[0]<<"."<<
+		(uint32_t)((uint8_t*)&address)[1]<<"."<<
+		(uint32_t)((uint8_t*)&address)[2]<<"."<<
+		(uint32_t)((uint8_t*)&address)[3];*/
+	//return ostr.str();
+	return "hey!";
 }
 
 std::string uint16_t_to_port(const uint16_t port)
@@ -241,6 +253,80 @@ netstat_list_t netstat_windows_parse_udp4()
 
 	return netstats;
 }
+
+#ifdef AF_INET6
+
+//only Works for xp sp2 and up
+netstat_list_t netstat_windows_parse_tcp6()
+{
+	if(!is_xp_sp2_or_later())
+		throw std::runtime_error("netstat_windows_parse_tcp6 - Only works with XP SP2 and up.");
+
+	MIB_TCP6TABLE_OWNER_PID* table=(MIB_TCP6TABLE_OWNER_PID*)malloc(sizeof(MIB_TCP6TABLE_OWNER_PID));
+	DWORD table_size=sizeof(MIB_TCP6TABLE_OWNER_PID);
+	DWORD error=GetExtendedTcpTable(table,&table_size,true,AF_INET6,TCP_TABLE_OWNER_PID_ALL,0);
+
+	if(error==ERROR_INSUFFICIENT_BUFFER)
+	{
+		free(table);
+		table=(MIB_TCP6TABLE_OWNER_PID*)malloc(table_size);
+	}
+	if(error==ERROR_INVALID_PARAMETER)
+	{
+		free(table);
+		throw std::runtime_error("");
+	}
+	if(error==ERROR_NOT_SUPPORTED)
+	{
+		free(table);
+		throw std::runtime_error("");
+	}
+
+	error=GetExtendedTcpTable(table,&table_size,true,AF_INET6,TCP_TABLE_OWNER_PID_ALL,0);
+
+	if(error==ERROR_INSUFFICIENT_BUFFER)
+	{
+		free(table);
+		throw std::runtime_error("");
+	}
+	if(error==ERROR_INVALID_PARAMETER)
+	{
+		free(table);
+		throw std::runtime_error("");
+	}
+	if(error==ERROR_NOT_SUPPORTED)
+	{
+		free(table);
+		throw std::runtime_error("");
+	}
+
+	netstat_list_t netstats;
+
+	for(size_t ii=0;ii<table->dwNumEntries;++ii)
+	{
+		if(table->table[ii].dwState>=states_size)
+		{
+			free(table);
+			throw std::runtime_error("");
+		}
+
+		netstat_t netstat;
+		netstat.proto="tcp6";
+		netstat.local_address=uint8_t_16_to_ipv6(table->table[ii].ucLocalAddr);
+		netstat.foreign_address=uint8_t_16_to_ipv6(table->table[ii].ucRemoteAddr);
+		netstat.local_port=uint16_t_to_port(table->table[ii].dwLocalPort);
+		netstat.foreign_port=uint16_t_to_port(table->table[ii].dwRemotePort);
+		netstat.state=states[table->table[ii].dwState];
+		netstat.pid=to_string(table->table[ii].dwOwningPid);
+		netstats.push_back(netstat);
+	}
+
+	free(table);
+
+	return netstats;
+}
+
+#endif
 
 netstat_list_t netstat_windows()
 {

@@ -1,7 +1,8 @@
 //-liphlpapi
 
 #include <Windows.h>
-#include <iphlpapi.h>
+#include <Iphlpapi.h>
+
 #include <iomanip>
 #include <iostream>
 #include <stdexcept>
@@ -83,16 +84,48 @@ std::string uint16_t_to_port(const uint16_t port)
 	return ostr.str();
 }
 
+std::string to_string(const uint32_t val)
+{
+	std::ostringstream ostr;
+	ostr<<val;
+	return ostr.str();
+}
+
+bool is_xp_sp2_or_later()
+{
+	OSVERSIONINFOEX osvi;
+	memset(&osvi,0,sizeof(OSVERSIONINFOEX));
+	osvi.dwOSVersionInfoSize=sizeof(OSVERSIONINFOEX);
+	osvi.dwMajorVersion=5;
+	osvi.dwMinorVersion=1;
+	osvi.wServicePackMajor=2;
+	osvi.wServicePackMinor=0;
+
+	DWORDLONG dwlConditionMask=0;
+	int op=VER_GREATER_EQUAL;
+	VER_SET_CONDITION(dwlConditionMask,VER_MAJORVERSION,op);
+	VER_SET_CONDITION(dwlConditionMask,VER_MINORVERSION,op);
+	VER_SET_CONDITION(dwlConditionMask,VER_SERVICEPACKMAJOR,op);
+	VER_SET_CONDITION(dwlConditionMask,VER_SERVICEPACKMINOR,op);
+
+	return VerifyVersionInfo(&osvi,
+		VER_MAJORVERSION|VER_MINORVERSION|VER_SERVICEPACKMAJOR|VER_SERVICEPACKMINOR,dwlConditionMask);
+}
+
+//only Works for xp sp2 and up
 netstat_list_t netstat_windows_parse_tcp4()
 {
-	MIB_TCPTABLE* table=(MIB_TCPTABLE*)malloc(sizeof(MIB_TCPTABLE));
-	DWORD table_size=sizeof(MIB_TCPTABLE);
-	DWORD error=GetTcpTable(table,&table_size,true);
+	if(!is_xp_sp2_or_later())
+		throw std::runtime_error("netstat_windows_parse_tcp4 - Only works with XP SP2 and up.");
+
+	MIB_TCPTABLE_OWNER_PID* table=(MIB_TCPTABLE_OWNER_PID*)malloc(sizeof(MIB_TCPTABLE_OWNER_PID));
+	DWORD table_size=sizeof(MIB_TCPTABLE_OWNER_PID);
+	DWORD error=GetExtendedTcpTable(table,&table_size,true,AF_INET,TCP_TABLE_OWNER_PID_ALL,0);
 
 	if(error==ERROR_INSUFFICIENT_BUFFER)
 	{
 		free(table);
-		table=(MIB_TCPTABLE*)malloc(table_size);
+		table=(MIB_TCPTABLE_OWNER_PID*)malloc(table_size);
 	}
 	if(error==ERROR_INVALID_PARAMETER)
 	{
@@ -105,7 +138,7 @@ netstat_list_t netstat_windows_parse_tcp4()
 		throw std::runtime_error("");
 	}
 
-	error=GetTcpTable(table,&table_size,true);
+	error=GetExtendedTcpTable(table,&table_size,true,AF_INET,TCP_TABLE_OWNER_PID_ALL,0);
 
 	if(error==ERROR_INSUFFICIENT_BUFFER)
 	{
@@ -140,6 +173,7 @@ netstat_list_t netstat_windows_parse_tcp4()
 		netstat.local_port=uint16_t_to_port(table->table[ii].dwLocalPort);
 		netstat.foreign_port=uint16_t_to_port(table->table[ii].dwRemotePort);
 		netstat.state=states[table->table[ii].dwState];
+		netstat.pid=to_string(table->table[ii].dwOwningPid);
 		netstats.push_back(netstat);
 	}
 
@@ -150,14 +184,17 @@ netstat_list_t netstat_windows_parse_tcp4()
 
 netstat_list_t netstat_windows_parse_udp4()
 {
-	MIB_UDPTABLE* table=(MIB_UDPTABLE*)malloc(sizeof(MIB_UDPTABLE));
-	DWORD table_size=sizeof(MIB_UDPTABLE);
-	DWORD error=GetUdpTable(table,&table_size,true);
+	if(!is_xp_sp2_or_later())
+		throw std::runtime_error("netstat_windows_parse_udp4 - Only works with XP SP2 and up.");
+
+	MIB_UDPTABLE_OWNER_PID* table=(MIB_UDPTABLE_OWNER_PID*)malloc(sizeof(MIB_UDPTABLE_OWNER_PID));
+	DWORD table_size=sizeof(MIB_UDPTABLE_OWNER_PID);
+	DWORD error=GetExtendedUdpTable(table,&table_size,true,AF_INET,UDP_TABLE_OWNER_PID,0);
 
 	if(error==ERROR_INSUFFICIENT_BUFFER)
 	{
 		free(table);
-		table=(MIB_UDPTABLE*)malloc(table_size);
+		table=(MIB_UDPTABLE_OWNER_PID*)malloc(table_size);
 	}
 	if(error==ERROR_INVALID_PARAMETER)
 	{
@@ -170,7 +207,7 @@ netstat_list_t netstat_windows_parse_udp4()
 		throw std::runtime_error("");
 	}
 
-	error=GetUdpTable(table,&table_size,true);
+	error=GetExtendedUdpTable(table,&table_size,true,AF_INET,UDP_TABLE_OWNER_PID,0);
 
 	if(error==ERROR_INSUFFICIENT_BUFFER)
 	{
@@ -195,10 +232,8 @@ netstat_list_t netstat_windows_parse_udp4()
 		netstat_t netstat;
 		netstat.proto="udp4";
 		netstat.local_address=uint32_t_to_ipv4(table->table[ii].dwLocalAddr);
-		netstat.foreign_address=uint32_t_to_ipv4(0);
 		netstat.local_port=uint16_t_to_port(table->table[ii].dwLocalPort);
-		netstat.foreign_port=uint16_t_to_port(0);
-		netstat.state="-";
+		netstat.pid=to_string(table->table[ii].dwOwningPid);
 		netstats.push_back(netstat);
 	}
 
@@ -230,7 +265,6 @@ netstat_list_t netstat_windows()
 
 int main()
 {
-
 	netstat_list_t netstats=netstat_windows();
 	netstat_list_print(netstats);
 	return 0;

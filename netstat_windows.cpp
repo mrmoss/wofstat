@@ -1,7 +1,7 @@
-//-liphlpapi
+//-lIPHlpApi -lWs2_32
 //http://forums.codeguru.com/showthread.php?188092.html
 
-#include <Windows.h>
+#include <winsock2.h>
 #include <IPHlpApi.h>
 
 #include <iomanip>
@@ -83,8 +83,8 @@ std::string uint8_t_16_to_ipv6(const uint8_t address[16])
 	std::ostringstream ostr;
 	for(int ii=0;ii<16;ii+=2)
 	{
-		ostr<<std::setfill('0')<<std::setw(2)<<std::hex<<address[ii+1];
-		ostr<<std::setfill('0')<<std::setw(2)<<std::hex<<address[ii+0];
+		ostr<<std::hex<<std::setw(2)<<std::setfill('0')<<(unsigned int)(unsigned char)address[ii+0];
+		ostr<<std::hex<<std::setw(2)<<std::setfill('0')<<(unsigned int)(unsigned char)address[ii+1];
 
 		if(ii<14)
 			ostr<<":";
@@ -107,7 +107,7 @@ std::string to_string(const uint32_t val)
 	return ostr.str();
 }
 
-#if(defined(NTDDI_WINXPSP2))
+#if(defined(NTDDI_VERSION)&&defined(NTDDI_WINXPSP2)&&(NTDDI_VERSION>=NTDDI_WINXPSP2))
 
 netstat_list_t netstat_windows_parse_tcp4()
 {
@@ -231,6 +231,176 @@ netstat_list_t netstat_windows_parse_udp4()
 		netstat.proto="udp4";
 		netstat.local_address=uint32_t_to_ipv4(table->table[ii].dwLocalAddr);
 		netstat.foreign_address="0.0.0.0";
+		netstat.local_port=dword_to_port(table->table[ii].dwLocalPort);
+		netstat.foreign_port="0";
+		netstat.state="-";
+		netstat.pid=to_string(table->table[ii].dwOwningPid);
+		netstats.push_back(netstat);
+	}
+
+	free(table);
+
+	return netstats;
+}
+
+#if(defined(NTDDI_VERSION)&&defined(NTDDI_VISTA)&&(NTDDI_VERSION>=NTDDI_VISTA))
+
+	struct MIB_TCP6ROW_OWNER_PID
+	{
+		UCHAR ucLocalAddr[16];
+		DWORD dwLocalScopeId;
+		DWORD dwLocalPort;
+		UCHAR ucRemoteAddr[16];
+		DWORD dwRemoteScopeId;
+		DWORD dwRemotePort;
+		DWORD dwState;
+		DWORD dwOwningPid;
+	};
+
+	struct MIB_UDP6ROW_OWNER_PID
+	{
+		UCHAR ucLocalAddr[16];
+		DWORD dwLocalScopeId;
+		DWORD dwLocalPort;
+		DWORD dwOwningPid;
+	};
+
+	struct MIB_TCP6TABLE_OWNER_PID
+	{
+		DWORD dwNumEntries;
+		MIB_TCP6ROW_OWNER_PID table[ANY_SIZE];
+	};
+
+	struct MIB_UDP6TABLE_OWNER_PID
+	{
+		DWORD dwNumEntries;
+		MIB_UDP6ROW_OWNER_PID table[ANY_SIZE];
+	};
+
+#endif
+
+netstat_list_t netstat_windows_parse_tcp6()
+{
+	MIB_TCP6TABLE_OWNER_PID* table=(MIB_TCP6TABLE_OWNER_PID*)malloc(sizeof(MIB_TCP6TABLE_OWNER_PID));
+	DWORD table_size=sizeof(MIB_TCP6TABLE_OWNER_PID);
+	DWORD error=GetExtendedTcpTable(table,&table_size,true,AF_INET6,TCP_TABLE_OWNER_PID_ALL,0);
+
+	if(error==ERROR_INSUFFICIENT_BUFFER)
+	{
+		free(table);
+		table=(MIB_TCP6TABLE_OWNER_PID*)malloc(table_size);
+	}
+	if(error==ERROR_INVALID_PARAMETER)
+	{
+		free(table);
+		throw std::runtime_error("");
+	}
+	if(error==ERROR_NOT_SUPPORTED)
+	{
+		free(table);
+		throw std::runtime_error("");
+	}
+
+	error=GetExtendedTcpTable(table,&table_size,true,AF_INET6,TCP_TABLE_OWNER_PID_ALL,0);
+
+	if(error==ERROR_INSUFFICIENT_BUFFER)
+	{
+		free(table);
+		throw std::runtime_error("");
+	}
+	if(error==ERROR_INVALID_PARAMETER)
+	{
+		free(table);
+		throw std::runtime_error("");
+	}
+	if(error==ERROR_NOT_SUPPORTED)
+	{
+		free(table);
+		throw std::runtime_error("");
+	}
+
+	netstat_list_t netstats;
+
+	for(size_t ii=0;ii<table->dwNumEntries;++ii)
+	{
+		netstat_t netstat;
+		netstat.proto="tcp6";
+		netstat.local_address=uint8_t_16_to_ipv6(table->table[ii].ucLocalAddr);
+		netstat.foreign_address=uint8_t_16_to_ipv6(table->table[ii].ucRemoteAddr);
+		netstat.local_port=dword_to_port(table->table[ii].dwLocalPort);
+		netstat.foreign_port=dword_to_port(table->table[ii].dwRemotePort);
+
+		if(table->table[ii].dwState>=states_size)
+		{
+			free(table);
+			throw std::runtime_error("");
+		}
+
+		netstat.state=states[table->table[ii].dwState];
+
+		if(table->table[ii].dwState==2)
+		{
+			netstat.foreign_address="0000:0000:0000:0000:0000:0000:0000:0000";
+			netstat.foreign_port="0";
+		}
+
+		netstat.pid=to_string(table->table[ii].dwOwningPid);
+		netstats.push_back(netstat);
+	}
+
+	free(table);
+
+	return netstats;
+}
+
+netstat_list_t netstat_windows_parse_udp6()
+{
+	MIB_UDP6TABLE_OWNER_PID* table=(MIB_UDP6TABLE_OWNER_PID*)malloc(sizeof(MIB_UDP6TABLE_OWNER_PID));
+	DWORD table_size=sizeof(MIB_UDP6TABLE_OWNER_PID);
+	DWORD error=GetExtendedUdpTable(table,&table_size,true,AF_INET6,UDP_TABLE_OWNER_PID,0);
+
+	if(error==ERROR_INSUFFICIENT_BUFFER)
+	{
+		free(table);
+		table=(MIB_UDP6TABLE_OWNER_PID*)malloc(table_size);
+	}
+	if(error==ERROR_INVALID_PARAMETER)
+	{
+		free(table);
+		throw std::runtime_error("");
+	}
+	if(error==ERROR_NOT_SUPPORTED)
+	{
+		free(table);
+		throw std::runtime_error("");
+	}
+
+	error=GetExtendedUdpTable(table,&table_size,true,AF_INET6,UDP_TABLE_OWNER_PID,0);
+
+	if(error==ERROR_INSUFFICIENT_BUFFER)
+	{
+		free(table);
+		throw std::runtime_error("");
+	}
+	if(error==ERROR_INVALID_PARAMETER)
+	{
+		free(table);
+		throw std::runtime_error("");
+	}
+	if(error==ERROR_NOT_SUPPORTED)
+	{
+		free(table);
+		throw std::runtime_error("");
+	}
+
+	netstat_list_t netstats;
+
+	for(size_t ii=0;ii<table->dwNumEntries;++ii)
+	{
+		netstat_t netstat;
+		netstat.proto="udp6";
+		netstat.local_address=uint8_t_16_to_ipv6(table->table[ii].ucLocalAddr);
+		netstat.foreign_address="0000:0000:0000:0000:0000:0000:0000:0000";
 		netstat.local_port=dword_to_port(table->table[ii].dwLocalPort);
 		netstat.foreign_port="0";
 		netstat.state="-";
@@ -378,7 +548,7 @@ netstat_list_t netstat_windows()
 	netstat_list_t tcp4=netstat_windows_parse_tcp4();
 	netstat_list_t udp4=netstat_windows_parse_udp4();
 
-	#if(defined(NTDDI_WINXPSP2))
+	#if(defined(NTDDI_VERSION)&&defined(NTDDI_WINXPSP2)&&(NTDDI_VERSION>=NTDDI_WINXPSP2))
 		//netstat_list_t tcp6=netstat_windows_parse_tcp6();
 		//netstat_list_t udp6=netstat_windows_parse_udp6();
 	#endif
@@ -388,18 +558,18 @@ netstat_list_t netstat_windows()
 	for(size_t ii=0;ii<tcp4.size();++ii)
 		netstats.push_back(tcp4[ii]);
 
-	#if(defined(NTDDI_WINXPSP2))
-		//for(size_t ii=0;ii<tcp6.size();++ii)
-		//	netstats.push_back(tcp6[ii]);
-	#endif
+	/*#if(defined(NTDDI_VERSION)&&defined(NTDDI_WINXPSP2)&&(NTDDI_VERSION>=NTDDI_WINXPSP2))
+		for(size_t ii=0;ii<tcp6.size();++ii)
+			netstats.push_back(tcp6[ii]);
+	#endif*/
 
 	for(size_t ii=0;ii<udp4.size();++ii)
 		netstats.push_back(udp4[ii]);
 
-	#if(defined(NTDDI_WINXPSP2))
-		//for(size_t ii=0;ii<udp6.size();++ii)
-		//	netstats.push_back(udp6[ii]);
-	#endif
+	/*#if(defined(NTDDI_VERSION)&&defined(NTDDI_WINXPSP2)&&(NTDDI_VERSION>=NTDDI_WINXPSP2))
+		for(size_t ii=0;ii<udp6.size();++ii)
+			netstats.push_back(udp6[ii]);
+	#endif*/
 
 	return netstats;
 }

@@ -124,7 +124,7 @@ netstat_list_t netstat_windows_parse_tcp4()
 	if(error==ERROR_INVALID_PARAMETER)
 	{
 		free(table);
-		throw std::runtime_error("");
+		throw std::runtime_error("netstat_windows_parse_tcp4 - GetExtendedTcpTable returned ERROR_INVALID_PARAMETER.");
 	}
 	if(error==ERROR_NOT_SUPPORTED)
 	{
@@ -137,12 +137,12 @@ netstat_list_t netstat_windows_parse_tcp4()
 	if(error==ERROR_INSUFFICIENT_BUFFER)
 	{
 		free(table);
-		throw std::runtime_error("");
+		throw std::runtime_error("netstat_windows_parse_tcp4 - GetExtendedTcpTable returned ERROR_INSUFFICIENT_BUFFER.");
 	}
 	if(error==ERROR_INVALID_PARAMETER)
 	{
 		free(table);
-		throw std::runtime_error("");
+		throw std::runtime_error("netstat_windows_parse_tcp4 - GetExtendedTcpTable returned ERROR_INVALID_PARAMETER.");
 	}
 	if(error==ERROR_NOT_SUPPORTED)
 	{
@@ -162,7 +162,7 @@ netstat_list_t netstat_windows_parse_tcp4()
 		if(table->table[ii].dwState>=states_size)
 		{
 			free(table);
-			throw std::runtime_error("");
+			throw std::runtime_error("netstat_windows_parse_tcp4 - Invalid state returned.");
 		}
 
 		netstat.state=states[table->table[ii].dwState];
@@ -196,7 +196,7 @@ netstat_list_t netstat_windows_parse_udp4()
 	if(error==ERROR_INVALID_PARAMETER)
 	{
 		free(table);
-		throw std::runtime_error("");
+		throw std::runtime_error("netstat_windows_parse_udp4 - GetExtendedUdpTable returned ERROR_INVALID_PARAMETER.");
 	}
 	if(error==ERROR_NOT_SUPPORTED)
 	{
@@ -209,12 +209,12 @@ netstat_list_t netstat_windows_parse_udp4()
 	if(error==ERROR_INSUFFICIENT_BUFFER)
 	{
 		free(table);
-		throw std::runtime_error("");
+		throw std::runtime_error("netstat_windows_parse_udp4 - GetExtendedUdpTable returned ERROR_INSUFFICIENT_BUFFER.");
 	}
 	if(error==ERROR_INVALID_PARAMETER)
 	{
 		free(table);
-		throw std::runtime_error("");
+		throw std::runtime_error("netstat_windows_parse_udp4 - GetExtendedUdpTable returned ERROR_INVALID_PARAMETER.");
 	}
 	if(error==ERROR_NOT_SUPPORTED)
 	{
@@ -291,7 +291,7 @@ netstat_list_t netstat_windows_parse_tcp6()
 	if(error==ERROR_INVALID_PARAMETER)
 	{
 		free(table);
-		throw std::runtime_error("");
+		throw std::runtime_error("netstat_windows_parse_tcp6 - GetExtendedTcpTable returned ERROR_INVALID_PARAMETER.");
 	}
 	if(error==ERROR_NOT_SUPPORTED)
 	{
@@ -304,12 +304,12 @@ netstat_list_t netstat_windows_parse_tcp6()
 	if(error==ERROR_INSUFFICIENT_BUFFER)
 	{
 		free(table);
-		throw std::runtime_error("");
+		throw std::runtime_error("netstat_windows_parse_tcp6 - GetExtendedTcpTable returned ERROR_INSUFFICIENT_BUFFER.");
 	}
 	if(error==ERROR_INVALID_PARAMETER)
 	{
 		free(table);
-		throw std::runtime_error("");
+		throw std::runtime_error("netstat_windows_parse_tcp6 - GetExtendedTcpTable returned ERROR_INVALID_PARAMETER.");
 	}
 	if(error==ERROR_NOT_SUPPORTED)
 	{
@@ -329,7 +329,7 @@ netstat_list_t netstat_windows_parse_tcp6()
 		if(table->table[ii].dwState>=states_size)
 		{
 			free(table);
-			throw std::runtime_error("");
+			throw std::runtime_error("netstat_windows_parse_tcp6 - Invalid state returned.");
 		}
 
 		netstat.state=states[table->table[ii].dwState];
@@ -364,7 +364,7 @@ netstat_list_t netstat_windows_parse_udp6()
 	if(error==ERROR_INVALID_PARAMETER)
 	{
 		free(table);
-		throw std::runtime_error("");
+		throw std::runtime_error("netstat_windows_parse_udp6 - GetExtendedUdpTable returned ERROR_INVALID_PARAMETER.");
 	}
 	if(error==ERROR_NOT_SUPPORTED)
 	{
@@ -377,12 +377,12 @@ netstat_list_t netstat_windows_parse_udp6()
 	if(error==ERROR_INSUFFICIENT_BUFFER)
 	{
 		free(table);
-		throw std::runtime_error("");
+		throw std::runtime_error("netstat_windows_parse_udp6 - GetExtendedUdpTable returned ERROR_INSUFFICIENT_BUFFER.");
 	}
 	if(error==ERROR_INVALID_PARAMETER)
 	{
 		free(table);
-		throw std::runtime_error("");
+		throw std::runtime_error("netstat_windows_parse_udp6 - GetExtendedUdpTable returned ERROR_INVALID_PARAMETER.");
 	}
 	if(error==ERROR_NOT_SUPPORTED)
 	{
@@ -448,48 +448,47 @@ netstat_list_t netstat_windows_parse_tcp4()
 	HMODULE hModule=LoadLibrary("iphlpapi.dll");
 
 	if(hModule==NULL)
-		throw std::runtime_error("");
+		throw std::runtime_error("netstat_windows_parse_tcp4 - Could not load iphlpapi.dll.");
 
 	PROCALLOCATEANDGETTCPEXTABLEFROMSTACK AllocateAndGetTcpExTableFromStack=(PROCALLOCATEANDGETTCPEXTABLEFROMSTACK)GetProcAddress(hModule,"AllocateAndGetTcpExTableFromStack");
+
 	if(AllocateAndGetTcpExTableFromStack==NULL)
-		throw std::runtime_error("");
+		throw std::runtime_error("netstat_windows_parse_tcp4 - Could not locate function AllocateAndGetUdpExTableFromStack from iphlpapi.dll.");
 
 	MIB_TCPTABLE_EX* table = NULL;
 	DWORD error=AllocateAndGetTcpExTableFromStack(&table,TRUE,GetProcessHeap(),0,2);
 	netstat_list_t netstats;
 
-	if(error==NO_ERROR)
-	{
-		for(size_t ii=0;ii<table->dwNumEntries;++ii)
-		{
-			if(table->table[ii].dwState>=states_size)
-			{
-				HeapFree(GetProcessHeap(),0,table);
-				throw std::runtime_error("");
-			}
-
-			netstat_t netstat;
-			netstat.proto="tcp4";
-			netstat.local_address=uint32_t_to_ipv4(table->table[ii].dwLocalAddr);
-			netstat.foreign_address=uint32_t_to_ipv4(table->table[ii].dwRemoteAddr);
-			netstat.local_port=dword_to_port(table->table[ii].dwLocalPort);
-			netstat.foreign_port=dword_to_port(table->table[ii].dwRemotePort);
-			netstat.state=states[table->table[ii].dwState];
-
-			if(table->table[ii].dwState==2)
-			{
-				netstat.foreign_address="0.0.0.0";
-				netstat.foreign_port="0";
-			}
-
-			netstat.pid=to_string(table->table[ii].dwProcessId);
-			netstats.push_back(netstat);
-		}
-	}
-	else
+	if(error!=NO_ERROR)
 	{
 		HeapFree(GetProcessHeap(),0,table);
-		throw std::runtime_error("");
+		throw std::runtime_error("netstat_windows_parse_tcp4 - External DLL call AllocateAndGetTcpExTableFromStack failed.");
+	}
+
+	for(size_t ii=0;ii<table->dwNumEntries;++ii)
+	{
+		if(table->table[ii].dwState>=states_size)
+		{
+			HeapFree(GetProcessHeap(),0,table);
+			throw std::runtime_error("netstat_windows_parse_tcp4 - Invalid state returned.");
+		}
+
+		netstat_t netstat;
+		netstat.proto="tcp4";
+		netstat.local_address=uint32_t_to_ipv4(table->table[ii].dwLocalAddr);
+		netstat.foreign_address=uint32_t_to_ipv4(table->table[ii].dwRemoteAddr);
+		netstat.local_port=dword_to_port(table->table[ii].dwLocalPort);
+		netstat.foreign_port=dword_to_port(table->table[ii].dwRemotePort);
+		netstat.state=states[table->table[ii].dwState];
+
+		if(table->table[ii].dwState==2)
+		{
+			netstat.foreign_address="0.0.0.0";
+			netstat.foreign_port="0";
+		}
+
+		netstat.pid=to_string(table->table[ii].dwProcessId);
+		netstats.push_back(netstat);
 	}
 
 	HeapFree(GetProcessHeap(),0,table);
@@ -501,35 +500,34 @@ netstat_list_t netstat_windows_parse_udp4()
 	HMODULE hModule=LoadLibrary("iphlpapi.dll");
 
 	if(hModule==NULL)
-		throw std::runtime_error("");
+		throw std::runtime_error("netstat_windows_parse_udp4 - Could not load iphlpapi.dll.");
 
 	PROCALLOCATEANDGETUDPEXTABLEFROMSTACK AllocateAndGetUdpExTableFromStack=(PROCALLOCATEANDGETUDPEXTABLEFROMSTACK)GetProcAddress(hModule,"AllocateAndGetUdpExTableFromStack");
+
 	if(AllocateAndGetUdpExTableFromStack==NULL)
-		throw std::runtime_error("");
+		throw std::runtime_error("netstat_windows_parse_udp4 - Could not locate function AllocateAndGetUdpExTableFromStack from iphlpapi.dll.");
 
 	MIB_UDPTABLE_EX* table = NULL;
 	DWORD error=AllocateAndGetUdpExTableFromStack(&table,TRUE,GetProcessHeap(),0,2);
 	netstat_list_t netstats;
 
-	if(error==NO_ERROR)
-	{
-		for(size_t ii=0;ii<table->dwNumEntries;++ii)
-		{
-			netstat_t netstat;
-			netstat.proto="udp4";
-			netstat.local_address=uint32_t_to_ipv4(table->table[ii].dwLocalAddr);
-			netstat.foreign_address="0.0.0.0";
-			netstat.local_port=dword_to_port(table->table[ii].dwLocalPort);
-			netstat.foreign_port="0";
-			netstat.state="-";
-			netstat.pid=to_string(table->table[ii].dwProcessId);
-			netstats.push_back(netstat);
-		}
-	}
-	else
+	if(error!=NO_ERROR)
 	{
 		HeapFree(GetProcessHeap(),0,table);
-		throw std::runtime_error("");
+		throw std::runtime_error("netstat_windows_parse_udp4 - External DLL call AllocateAndGetUdpExTableFromStack failed.");
+	}
+
+	for(size_t ii=0;ii<table->dwNumEntries;++ii)
+	{
+		netstat_t netstat;
+		netstat.proto="udp4";
+		netstat.local_address=uint32_t_to_ipv4(table->table[ii].dwLocalAddr);
+		netstat.foreign_address="0.0.0.0";
+		netstat.local_port=dword_to_port(table->table[ii].dwLocalPort);
+		netstat.foreign_port="0";
+		netstat.state="-";
+		netstat.pid=to_string(table->table[ii].dwProcessId);
+		netstats.push_back(netstat);
 	}
 
 	HeapFree(GetProcessHeap(),0,table);

@@ -80,13 +80,17 @@ std::string uint32_t_to_ipv4(const uint32_t address)
 
 std::string uint8_t_16_to_ipv6(const uint8_t address[16])
 {
-	/*std::ostringstream ostr;
-	ostr<<(uint32_t)((uint8_t*)&address)[0]<<"."<<
-	(uint32_t)((uint8_t*)&address)[1]<<"."<<
-	(uint32_t)((uint8_t*)&address)[2]<<"."<<
-	(uint32_t)((uint8_t*)&address)[3];*/
-	//return ostr.str();
-	return "hey!";
+	std::ostringstream ostr;
+	for(int ii=0;ii<16;ii+=2)
+	{
+		ostr<<std::setfill('0')<<std::setw(2)<<std::hex<<address[ii+1];
+		ostr<<std::setfill('0')<<std::setw(2)<<std::hex<<address[ii+0];
+
+		if(ii<14)
+			ostr<<":";
+	}
+
+	return ostr.str();
 }
 
 std::string dword_to_port(const DWORD port)
@@ -372,23 +376,30 @@ netstat_list_t netstat_windows_parse_udp4()
 netstat_list_t netstat_windows()
 {
 	netstat_list_t tcp4=netstat_windows_parse_tcp4();
-	//netstat_list_t tcp6=netstat_windows_parse_tcp6();
 	netstat_list_t udp4=netstat_windows_parse_udp4();
-	//netstat_list_t udp6=netstat_windows_parse_udp6();
+
+	#if(defined(NTDDI_WINXPSP2))
+		//netstat_list_t tcp6=netstat_windows_parse_tcp6();
+		//netstat_list_t udp6=netstat_windows_parse_udp6();
+	#endif
 
 	netstat_list_t netstats;
 
 	for(size_t ii=0;ii<tcp4.size();++ii)
 		netstats.push_back(tcp4[ii]);
 
-	//for(size_t ii=0;ii<tcp6.size();++ii)
-	//	netstats.push_back(tcp6[ii]);
+	#if(defined(NTDDI_WINXPSP2))
+		//for(size_t ii=0;ii<tcp6.size();++ii)
+		//	netstats.push_back(tcp6[ii]);
+	#endif
 
 	for(size_t ii=0;ii<udp4.size();++ii)
 		netstats.push_back(udp4[ii]);
 
-	//for(size_t ii=0;ii<udp6.size();++ii)
-	//	netstats.push_back(udp6[ii]);
+	#if(defined(NTDDI_WINXPSP2))
+		//for(size_t ii=0;ii<udp6.size();++ii)
+		//	netstats.push_back(udp6[ii]);
+	#endif
 
 	return netstats;
 }

@@ -1,6 +1,8 @@
 //-lIPHlpApi -lWs2_32
 //http://forums.codeguru.com/showthread.php?188092.html
 
+#define _WIN32_WINNT_WINXP_SP2 0x05010200
+
 #include <winsock2.h>
 #include <IPHlpApi.h>
 
@@ -107,7 +109,7 @@ std::string to_string(const uint32_t val)
 	return ostr.str();
 }
 
-#if(defined(NTDDI_VERSION)&&defined(NTDDI_WINXPSP2)&&(NTDDI_VERSION>=NTDDI_WINXPSP2))
+#if(defined(_WIN32_WINNT)&&_WIN32_WINNT>=_WIN32_WINNT_WS03)
 
 netstat_list_t netstat_windows_parse_tcp4()
 {
@@ -240,7 +242,7 @@ netstat_list_t netstat_windows_parse_udp4()
 	return netstats;
 }
 
-#if(defined(NTDDI_VERSION)&&defined(NTDDI_VISTA)&&(NTDDI_VERSION>=NTDDI_VISTA))
+#if(defined(_WIN32_WINNT)&&_WIN32_WINNT>=_WIN32_WINNT_VISTA)
 
 	struct MIB_TCP6ROW_OWNER_PID
 	{
@@ -541,7 +543,7 @@ netstat_list_t netstat_windows()
 	netstat_list_t tcp4=netstat_windows_parse_tcp4();
 	netstat_list_t udp4=netstat_windows_parse_udp4();
 
-	#if(defined(NTDDI_VERSION)&&defined(NTDDI_WINXPSP2)&&(NTDDI_VERSION>=NTDDI_WINXPSP2))
+	#if(defined(_WIN32_WINNT)&&_WIN32_WINNT>=_WIN32_WINNT_WS03)
 		netstat_list_t tcp6=netstat_windows_parse_tcp6();
 		netstat_list_t udp6=netstat_windows_parse_udp6();
 	#endif
@@ -551,7 +553,7 @@ netstat_list_t netstat_windows()
 	for(size_t ii=0;ii<tcp4.size();++ii)
 		netstats.push_back(tcp4[ii]);
 
-	#if(defined(NTDDI_VERSION)&&defined(NTDDI_WINXPSP2)&&(NTDDI_VERSION>=NTDDI_WINXPSP2))
+	#if(defined(_WIN32_WINNT)&&_WIN32_WINNT>=_WIN32_WINNT_WS03)
 		for(size_t ii=0;ii<tcp6.size();++ii)
 			netstats.push_back(tcp6[ii]);
 	#endif
@@ -559,7 +561,7 @@ netstat_list_t netstat_windows()
 	for(size_t ii=0;ii<udp4.size();++ii)
 		netstats.push_back(udp4[ii]);
 
-	#if(defined(NTDDI_VERSION)&&defined(NTDDI_WINXPSP2)&&(NTDDI_VERSION>=NTDDI_WINXPSP2))
+	#if(defined(_WIN32_WINNT)&&_WIN32_WINNT>=_WIN32_WINNT_WS03)
 		for(size_t ii=0;ii<udp6.size();++ii)
 			netstats.push_back(udp6[ii]);
 	#endif

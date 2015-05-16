@@ -111,6 +111,7 @@ std::string to_string(const uint32_t val)
 
 netstat_list_t netstat_windows_parse_tcp4()
 {
+	netstat_list_t netstats;
 	MIB_TCPTABLE_OWNER_PID* table=(MIB_TCPTABLE_OWNER_PID*)malloc(sizeof(MIB_TCPTABLE_OWNER_PID));
 	DWORD table_size=sizeof(MIB_TCPTABLE_OWNER_PID);
 	DWORD error=GetExtendedTcpTable(table,&table_size,true,AF_INET,TCP_TABLE_OWNER_PID_ALL,0);
@@ -128,7 +129,7 @@ netstat_list_t netstat_windows_parse_tcp4()
 	if(error==ERROR_NOT_SUPPORTED)
 	{
 		free(table);
-		throw std::runtime_error("");
+		return netstats;
 	}
 
 	error=GetExtendedTcpTable(table,&table_size,true,AF_INET,TCP_TABLE_OWNER_PID_ALL,0);
@@ -146,10 +147,8 @@ netstat_list_t netstat_windows_parse_tcp4()
 	if(error==ERROR_NOT_SUPPORTED)
 	{
 		free(table);
-		throw std::runtime_error("");
+		return netstats;
 	}
-
-	netstat_list_t netstats;
 
 	for(size_t ii=0;ii<table->dwNumEntries;++ii)
 	{
@@ -179,12 +178,12 @@ netstat_list_t netstat_windows_parse_tcp4()
 	}
 
 	free(table);
-
 	return netstats;
 }
 
 netstat_list_t netstat_windows_parse_udp4()
 {
+	netstat_list_t netstats;
 	MIB_UDPTABLE_OWNER_PID* table=(MIB_UDPTABLE_OWNER_PID*)malloc(sizeof(MIB_UDPTABLE_OWNER_PID));
 	DWORD table_size=sizeof(MIB_UDPTABLE_OWNER_PID);
 	DWORD error=GetExtendedUdpTable(table,&table_size,true,AF_INET,UDP_TABLE_OWNER_PID,0);
@@ -202,7 +201,7 @@ netstat_list_t netstat_windows_parse_udp4()
 	if(error==ERROR_NOT_SUPPORTED)
 	{
 		free(table);
-		throw std::runtime_error("");
+		return netstats;
 	}
 
 	error=GetExtendedUdpTable(table,&table_size,true,AF_INET,UDP_TABLE_OWNER_PID,0);
@@ -220,10 +219,8 @@ netstat_list_t netstat_windows_parse_udp4()
 	if(error==ERROR_NOT_SUPPORTED)
 	{
 		free(table);
-		throw std::runtime_error("");
+		return netstats;
 	}
-
-	netstat_list_t netstats;
 
 	for(size_t ii=0;ii<table->dwNumEntries;++ii)
 	{
@@ -281,6 +278,7 @@ netstat_list_t netstat_windows_parse_udp4()
 
 netstat_list_t netstat_windows_parse_tcp6()
 {
+	netstat_list_t netstats;
 	MIB_TCP6TABLE_OWNER_PID* table=(MIB_TCP6TABLE_OWNER_PID*)malloc(sizeof(MIB_TCP6TABLE_OWNER_PID));
 	DWORD table_size=sizeof(MIB_TCP6TABLE_OWNER_PID);
 	DWORD error=GetExtendedTcpTable(table,&table_size,true,AF_INET6,TCP_TABLE_OWNER_PID_ALL,0);
@@ -298,7 +296,7 @@ netstat_list_t netstat_windows_parse_tcp6()
 	if(error==ERROR_NOT_SUPPORTED)
 	{
 		free(table);
-		throw std::runtime_error("");
+		return netstats;
 	}
 
 	error=GetExtendedTcpTable(table,&table_size,true,AF_INET6,TCP_TABLE_OWNER_PID_ALL,0);
@@ -316,10 +314,8 @@ netstat_list_t netstat_windows_parse_tcp6()
 	if(error==ERROR_NOT_SUPPORTED)
 	{
 		free(table);
-		throw std::runtime_error("");
+		return netstats;
 	}
-
-	netstat_list_t netstats;
 
 	for(size_t ii=0;ii<table->dwNumEntries;++ii)
 	{
@@ -355,6 +351,7 @@ netstat_list_t netstat_windows_parse_tcp6()
 
 netstat_list_t netstat_windows_parse_udp6()
 {
+	netstat_list_t netstats;
 	MIB_UDP6TABLE_OWNER_PID* table=(MIB_UDP6TABLE_OWNER_PID*)malloc(sizeof(MIB_UDP6TABLE_OWNER_PID));
 	DWORD table_size=sizeof(MIB_UDP6TABLE_OWNER_PID);
 	DWORD error=GetExtendedUdpTable(table,&table_size,true,AF_INET6,UDP_TABLE_OWNER_PID,0);
@@ -372,7 +369,7 @@ netstat_list_t netstat_windows_parse_udp6()
 	if(error==ERROR_NOT_SUPPORTED)
 	{
 		free(table);
-		throw std::runtime_error("");
+		return netstats;
 	}
 
 	error=GetExtendedUdpTable(table,&table_size,true,AF_INET6,UDP_TABLE_OWNER_PID,0);
@@ -390,10 +387,8 @@ netstat_list_t netstat_windows_parse_udp6()
 	if(error==ERROR_NOT_SUPPORTED)
 	{
 		free(table);
-		throw std::runtime_error("");
+		return netstats;
 	}
-
-	netstat_list_t netstats;
 
 	for(size_t ii=0;ii<table->dwNumEntries;++ii)
 	{
@@ -549,8 +544,8 @@ netstat_list_t netstat_windows()
 	netstat_list_t udp4=netstat_windows_parse_udp4();
 
 	#if(defined(NTDDI_VERSION)&&defined(NTDDI_WINXPSP2)&&(NTDDI_VERSION>=NTDDI_WINXPSP2))
-		//netstat_list_t tcp6=netstat_windows_parse_tcp6();
-		//netstat_list_t udp6=netstat_windows_parse_udp6();
+		netstat_list_t tcp6=netstat_windows_parse_tcp6();
+		netstat_list_t udp6=netstat_windows_parse_udp6();
 	#endif
 
 	netstat_list_t netstats;
@@ -558,18 +553,18 @@ netstat_list_t netstat_windows()
 	for(size_t ii=0;ii<tcp4.size();++ii)
 		netstats.push_back(tcp4[ii]);
 
-	/*#if(defined(NTDDI_VERSION)&&defined(NTDDI_WINXPSP2)&&(NTDDI_VERSION>=NTDDI_WINXPSP2))
+	#if(defined(NTDDI_VERSION)&&defined(NTDDI_WINXPSP2)&&(NTDDI_VERSION>=NTDDI_WINXPSP2))
 		for(size_t ii=0;ii<tcp6.size();++ii)
 			netstats.push_back(tcp6[ii]);
-	#endif*/
+	#endif
 
 	for(size_t ii=0;ii<udp4.size();++ii)
 		netstats.push_back(udp4[ii]);
 
-	/*#if(defined(NTDDI_VERSION)&&defined(NTDDI_WINXPSP2)&&(NTDDI_VERSION>=NTDDI_WINXPSP2))
+	#if(defined(NTDDI_VERSION)&&defined(NTDDI_WINXPSP2)&&(NTDDI_VERSION>=NTDDI_WINXPSP2))
 		for(size_t ii=0;ii<udp6.size();++ii)
 			netstats.push_back(udp6[ii]);
-	#endif*/
+	#endif
 
 	return netstats;
 }

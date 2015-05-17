@@ -1,8 +1,6 @@
 //-lIPHlpApi -lWs2_32
 //http://forums.codeguru.com/showthread.php?188092.html
 
-#define _WIN32_WINNT_WINXP_SP2 0x05010200
-
 #include <winsock2.h>
 #include <IPHlpApi.h>
 

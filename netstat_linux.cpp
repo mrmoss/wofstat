@@ -1,8 +1,8 @@
 //http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/include/net/tcp_states.h
 //Tested on:
-//	Ubuntu 14.04
-//	Kali 1.0.9
-//	Fedora 10
+//	Ubuntu 14.04 (g++)
+//	Kali 1.0.9 (g++)
+//	Fedora 10 (g++)
 
 #include <algorithm>
 #include <cstdio>

@@ -2,6 +2,7 @@
 //Tested on:
 //	Ubuntu 14.04
 //	Kali 1.0.9
+//	Fedora 10
 
 #include <algorithm>
 #include <cstdio>

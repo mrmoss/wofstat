@@ -1,3 +1,8 @@
+//http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/include/net/tcp_states.h
+//Tested on:
+//	Ubuntu 14.04
+//	Kali 1.0.9
+
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
@@ -17,7 +22,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-//http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/include/net/tcp_states.h
 const size_t states_size=14;
 const std::string states[states_size]=
 {

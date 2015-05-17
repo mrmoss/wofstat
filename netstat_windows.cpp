@@ -1,5 +1,9 @@
 //-lIPHlpApi -lWs2_32
 //http://forums.codeguru.com/showthread.php?188092.html
+//Tested on:
+//	Windows XP SP2
+//	Windows 7
+//	Windows 8.1
 
 #include <winsock2.h>
 #include <IPHlpApi.h>

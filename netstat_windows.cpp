@@ -2,8 +2,8 @@
 //http://forums.codeguru.com/showthread.php?188092.html
 //Tested on:
 //	Windows XP SP2 (MinGW)
-//	Windows 7 (VS2013)
-//	Windows 8.1 (VS2013)
+//	Windows 7 (VS2013, MinGW FAILS DUE TO HEADER DECLARATION CHANGES)
+//	Windows 8.1 (VS2013, MinGW FAILS DUE TO HEADER DECLARATION CHANGES)
 
 #include <winsock2.h>
 #include <IPHlpApi.h>

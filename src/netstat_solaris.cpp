@@ -76,6 +76,13 @@ std::string dword_to_port(const uint32_t port)
         return ostr.str();
 }
 
+std::string to_string(const uint32_t val)
+{
+        std::ostringstream ostr;
+        ostr<<val;
+        return ostr.str();
+}
+
 std::string state_int_to_string(const uint32_t state)
 {
 	if(state==MIB2_TCP_established)
@@ -98,7 +105,7 @@ std::string state_int_to_string(const uint32_t state)
 		return "LAST_ACK";
 	if(state==MIB2_TCP_listen)
 		return "LISTEN";
-	if(state==MIB2_TCP_closing)
+	if(state==MIB2_TCP_closing||state==MIB2_TCP_deleteTCB)
 		return "CLOSING";
 	
 	return "UNKNOWN";
@@ -195,17 +202,17 @@ int main()
 			std::cout<<"moredata"<<std::endl;
 			break;
 		}
-		if (reply.ack_header.PRIM_type != T_OPTMGMT_ACK)
+		if (reply.ack_header.PRIM_type!=T_OPTMGMT_ACK)
 		{
 			std::cout<<"primtype"<<std::endl;
 			break;
 		}
-		if ((unsigned int)buf2.len < sizeof(reply.ack_header))
+		if ((unsigned int)buf2.len<sizeof(reply.ack_header))
 		{
 			std::cout<<"buf2len"<<std::endl;
 			break;
 		}
-		if ((unsigned int)reply.ack_header.OPT_length < sizeof(reply.opt_header))
+		if ((unsigned int)reply.ack_header.OPT_length<sizeof(reply.opt_header))
 		{
 			std::cout<<"optlength"<<std::endl;
 			break;
@@ -233,7 +240,7 @@ int main()
 					netstat.local_port=dword_to_port(htons(entry->tcpConnLocalPort));
 					netstat.foreign_port=dword_to_port(htons(entry->tcpConnRemPort));
 					netstat.state=state_int_to_string(entry->tcpConnState);
-					netstat.pid="-";
+					netstat.pid=to_string(entry->tcpConnCreationProcess);
 					tcp4.push_back(netstat);
 				}
 			}
@@ -249,7 +256,7 @@ int main()
 					netstat.local_port=dword_to_port(htons(entry->tcp6ConnLocalPort));
 					netstat.foreign_port=dword_to_port(htons(entry->tcp6ConnRemPort));
 					netstat.state=state_int_to_string(entry->tcp6ConnState);
-					netstat.pid="-";
+					netstat.pid=to_string(entry->tcp6ConnCreationProcess);
 					tcp6.push_back(netstat);
 				}
 			}
@@ -265,7 +272,7 @@ int main()
 					netstat.local_port=dword_to_port(htons(entry->udpLocalPort));
 					netstat.foreign_port="0";
 					netstat.state="-";
-					netstat.pid="-";
+					netstat.pid=to_string(entry->udpCreationProcess);
 					udp4.push_back(netstat);
 				}
 			}
@@ -281,7 +288,7 @@ int main()
 					netstat.local_port=dword_to_port(htons(entry->udp6LocalPort));
 					netstat.foreign_port="0";
 					netstat.state="-";
-					netstat.pid="-";
+					netstat.pid=to_string(entry->udp6CreationProcess);
 					udp6.push_back(netstat);
 				}
 			}

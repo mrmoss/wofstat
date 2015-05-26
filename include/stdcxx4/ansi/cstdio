@@ -1,0 +1,17 @@
+// -*- C++ -*-
+/**
+ * Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+ *
+ * ident	"@(#)cstdio.16.diff	1.1	10/11/05 SMI"
+ */
+
+#ifndef _STDIO_H
+
+#include <stdio.h>
+
+namespace std {
+    extern "C" int fileno(FILE *);
+}
+
+#endif /* _STDIO_H */
+

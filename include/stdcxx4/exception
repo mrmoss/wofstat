@@ -1,0 +1,55 @@
+/*
+        Copyright 02/24/06 Sun Microsystems, Inc. All Rights Reserved
+*/
+/* exception
+
+   @(#)exception	1.4  02/24/06 16:08:17
+
+   Declaration for ISO standard exception interface
+*/
+
+#if !defined(_EXCEPTION_HDR)
+#define _EXCEPTION_HDR
+
+namespace std {
+
+    class exception {
+public:
+	exception() throw() {}
+#pragma rarely_called(exception::exception)
+	exception(const exception&) throw() {}
+#pragma rarely_called(exception::exception)
+	exception& operator=(const exception&) throw() {return *this;}
+#pragma rarely_called(operator=)
+	virtual ~exception() throw() {}
+#pragma rarely_called(exception::~exception)
+	virtual const char* what() const throw();
+#pragma rarely_called(what)
+};
+
+    class bad_exception: public exception {
+    public:
+	bad_exception() throw() {}
+	bad_exception(const bad_exception&) throw() {}
+	bad_exception& operator=(const bad_exception&) throw() {return *this;}
+	~bad_exception() throw() {}
+	const char* what() const throw();
+    };
+
+    // Unexpected exception handling
+
+typedef void (*unexpected_handler) ();
+    unexpected_handler set_unexpected(unexpected_handler) throw();
+    void unexpected();
+
+    // Termination handling
+
+typedef void (*terminate_handler) ();
+    terminate_handler set_terminate(terminate_handler) throw();
+    void terminate();
+#pragma does_not_return (terminate)
+
+    bool uncaught_exception() throw();
+}
+
+#endif	/* _EXCEPTION_HDR */

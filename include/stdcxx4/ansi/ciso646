@@ -1,0 +1,18 @@
+// -*- C++ -*-
+/**
+ * Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+ *
+ * ident	"@(#)ciso646.8.diff	1.1	10/11/05 SMI"
+ */
+
+#ifndef _ISO_646_H
+#define _ISO_646_H
+
+#include <iso646.h>
+
+#ifndef __STDC_ISO_10646__
+#define __STDC_ISO_10646__
+#endif
+
+#endif /* _ISO_646_H */
+

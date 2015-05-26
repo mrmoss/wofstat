@@ -1,0 +1,110 @@
+/*
+ * adt.h
+ *
+ * Copyright (c) 2001, 2011, Oracle and/or its affiliates. All rights reserved.
+ *
+ * This is a contract private interface and is subject to change
+ */
+
+#ifndef _ADT_H
+#define	_ADT_H
+
+#pragma ident	"@(#)adt.h	1.11	11/11/10 SMI"
+
+#include <bsm/audit.h>
+#include <bsm/libbsm.h>
+#include <bsm/audit_record.h>
+#include <bsm/audit_uevents.h>
+#include <door.h>
+
+#ifdef	__cplusplus
+extern "C" {
+#endif
+
+#define	ADT_STRING_MAX	511		/* max non-null characters */
+#define	ADT_NO_ATTRIB	(uid_t)-1	/* unattributed user */
+#define	ADT_NO_CHANGE	(uid_t)-2	/* no update for this parameter */
+#define	ADT_NO_AUDIT	(uid_t)-3	/* unaudited user */
+
+/*
+ * terminal id types
+ */
+#define	ADT_IPv4	1
+#define	ADT_IPv6	2
+
+/*
+ * for adt_set_user(): ADT_NEW if creating a session for a newly
+ * authenticated user -- login -- and ADT_UPDATE if an authenticated
+ * user is changing uid/gid -- e.g., su.  ADT_USER changes only the
+ * ruid / euid / rgid / egid values and is appropriate for login-like
+ * operations where PAM has already set the audit context in the cred.
+ * ADT_SETTID is for the special case where it is necessary to store
+ * the terminal id in the credential before forking to the login or
+ * login-like process.
+ */
+enum adt_user_context {ADT_NEW, ADT_UPDATE, ADT_USER, ADT_SETTID};
+
+typedef ulong_t			adt_session_flags_t;
+typedef struct adt_session_data	adt_session_data_t;
+typedef struct adt_export_data	adt_export_data_t;
+typedef union adt_event_data	adt_event_data_t;
+typedef struct adt_termid	adt_termid_t;
+typedef struct stat64		adt_stat_t;
+
+/*
+ * flag defs for the flags argument of adt_start_session()
+ */
+
+#define	ADT_BUFFER_RECORDS	0x2	/* server buffering */
+#define	ADT_USE_PROC_DATA	0x1	/* copy audit char's from proc */
+	/* | all of above = ADT_FLAGS_ALL  */
+#define	ADT_FLAGS_ALL		ADT_BUFFER_RECORDS | \
+    ADT_USE_PROC_DATA
+
+/*
+ * Functions
+ */
+
+extern	int	adt_start_session(adt_session_data_t **,
+		    const adt_export_data_t *,
+		    adt_session_flags_t);
+extern	int	adt_end_session(adt_session_data_t *);
+extern	int	adt_dup_session(const adt_session_data_t *,
+    adt_session_data_t **);
+
+extern	int	adt_set_proc(const adt_session_data_t *);
+extern	int	adt_set_user(const adt_session_data_t *, uid_t, gid_t,
+		    uid_t, gid_t, const adt_termid_t *,
+		    enum adt_user_context);
+extern	int	adt_set_from_ucred(const adt_session_data_t *,
+		    const ucred_t *,
+		    enum adt_user_context);
+
+extern	size_t	adt_get_session_id(const adt_session_data_t *, char **);
+
+extern	size_t	adt_export_session_data(const adt_session_data_t *,
+		    adt_export_data_t **);
+extern	size_t	adt_import_proc(pid_t pid,
+		    uid_t euid,
+		    gid_t egid,
+		    uid_t ruid,
+		    gid_t rgid,
+		    adt_export_data_t **external);
+
+extern	adt_event_data_t
+		*adt_alloc_event(const adt_session_data_t *, au_event_t);
+
+extern	int	adt_put_event(const adt_event_data_t *, int, int);
+extern	void	adt_free_event(adt_event_data_t *);
+
+extern	int	adt_load_termid(int, adt_termid_t **);
+extern	int	adt_load_hostname(const char *, adt_termid_t **);
+extern	int	adt_load_ttyname(const char *, adt_termid_t **);
+
+extern	boolean_t	adt_audit_enabled(void);
+
+#ifdef	__cplusplus
+}
+#endif
+
+#endif	/* _ADT_H */

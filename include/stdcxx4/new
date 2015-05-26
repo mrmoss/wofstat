@@ -1,0 +1,79 @@
+// -*- C++ -*-
+/*
+        Copyright 03/03/10 Sun Microsystems, Inc. All Rights Reserved
+*/
+/* new
+
+   @(#)new	1.11  03/03/10 10:41:13
+
+   Declaration for ISO standard new and delete interface
+*/
+#if __SUNPRO_CC_COMPAT == 'G'
+#include_next <new>
+#else
+
+#if !defined(_NEW_HDR) && !defined(_RWSTD_NEW_INCLUDED)
+#define _NEW_HDR
+#define _RWSTD_NEW_INCLUDED
+
+#include <stddef.h>
+#include <exception>
+
+namespace std {
+
+    class bad_alloc : public exception { 
+public:
+	bad_alloc () throw() { }
+	bad_alloc(const bad_alloc&) throw() { }
+	bad_alloc& operator=(const bad_alloc&) throw() {return *this;}
+	~bad_alloc () throw() { }
+	const char* what() const throw();
+};
+    struct nothrow_t {};
+    extern const nothrow_t nothrow;
+typedef void (*new_handler) ();
+    extern new_handler set_new_handler(new_handler new_p) throw();
+}
+
+#ifndef   __SKYSTM_VERSION
+
+void* operator new(size_t) throw(std::bad_alloc);
+void* operator new(size_t, const std::nothrow_t&) throw();
+#pragma returns_new_memory (operator new)
+void  operator delete(void*) throw();
+void  operator delete(void*, const std::nothrow_t&) throw();
+void* operator new[](size_t) throw(std::bad_alloc);
+void* operator new[](size_t, const std::nothrow_t&) throw();
+#pragma returns_new_memory (operator new[])
+void  operator delete[](void*) throw();
+void  operator delete[](void*, const std::nothrow_t&) throw();
+
+__hidden inline void* operator new[] ( size_t, void* __ptr) throw()
+{ return __ptr; }
+__hidden inline void *operator new(size_t, void* __ptr) throw()
+{ return __ptr; }
+__hidden inline void operator delete  (void*, void*) throw() { }
+__hidden inline void operator delete[](void*, void*) throw() { }
+
+#else  // __SKYSTM_VERSION
+
+void* operator new(size_t) [[transaction_safe]] throw();
+void* operator new(size_t, const std::nothrow_t&) [[transaction_safe]] throw();
+#pragma returns_new_memory (operator new)
+void  operator delete(void*) [[transaction_safe]] throw();
+void  operator delete(void*, const std::nothrow_t&) [[transaction_safe]] throw();
+void* operator new[](size_t) [[transaction_safe]] throw();
+void* operator new[](size_t, const std::nothrow_t&) [[transaction_safe]] throw();
+#pragma returns_new_memory (operator new[])
+void  operator delete[](void*) [[transaction_safe]] throw();
+void  operator delete[](void*, const std::nothrow_t&) [[transaction_safe]] throw();
+
+__hidden inline void* operator new[] ( size_t, void* __ptr) [[transaction_safe]] throw() { return __ptr; }
+__hidden inline void *operator new(size_t, void* __ptr) [[transaction_safe]] throw() { return __ptr; }
+__hidden inline void operator delete  (void*, void*) [[transaction_safe]] throw() { }
+__hidden inline void operator delete[](void*, void*) [[transaction_safe]] throw() { }
+
+#endif // __SKYSTM_VERSION
+
+#endif	// _NEW_HDR && _RWSTD_NEW_INCLUDED
+#endif	// _SUNPRO_CC_COMPAT

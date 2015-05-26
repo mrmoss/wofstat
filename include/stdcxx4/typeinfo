@@ -1,0 +1,61 @@
+/*
+        Copyright 09/04/01 Sun Microsystems, Inc. All Rights Reserved
+*/
+/* typeinfo
+
+   @(#)typeinfo	1.6  09/04/01 10:08:18
+
+   Declaration for ISO standard type_info.
+*/
+
+#ifndef _TYPEINFO_HDR
+#define _TYPEINFO_HDR
+
+#include <exception>
+
+namespace __Cimpl {
+    class __type_info_friend;
+}
+
+namespace std {
+
+    class type_info {
+public:
+	virtual ~type_info();
+	virtual bool operator==(const type_info&) const;
+	virtual bool operator!=(const type_info&) const;
+	virtual bool before(const type_info&) const;
+	const char *name() const;
+
+private:
+	type_info(const type_info&);
+	type_info& operator=(const type_info&);
+
+	// Implementation
+	const void* __data;
+	type_info(const void*) throw();
+	friend __Cimpl::__type_info_friend;
+};
+
+    class bad_typeid: public exception {
+public:
+	bad_typeid() throw() {}
+	bad_typeid(const bad_typeid&) throw() {}
+	bad_typeid& operator=(const bad_typeid&) throw() {return *this;}
+	~bad_typeid() throw() {}
+	const char* what() const throw();
+};
+
+    class bad_cast: public exception {
+public:
+	bad_cast() throw() {}
+	bad_cast(const bad_cast&) throw() {}
+	bad_cast& operator=(const bad_cast&) throw() {return *this;}
+	~bad_cast() throw() {}
+	const char* what() const throw();
+};
+
+
+} 
+
+#endif

@@ -76,6 +76,34 @@ std::string dword_to_port(const uint32_t port)
         return ostr.str();
 }
 
+std::string state_int_to_string(const uint32_t state)
+{
+	if(state==MIB2_TCP_established)
+		return "ESTABLISHED";
+	if(state==MIB2_TCP_synSent)
+		return "SYN_SENT";
+	if(state==MIB2_TCP_synReceived)
+		return "SYN_RECV";
+	if(state==MIB2_TCP_finWait1)
+		return "FIN_WAIT1";
+	if(state==MIB2_TCP_finWait2)
+		return "FIN_WAIT2";
+	if(state==MIB2_TCP_timeWait)
+		return "TIME_WAIT";
+	if(state==MIB2_TCP_closed)
+		return "CLOSE";
+	if(state==MIB2_TCP_closeWait)
+		return "CLOSE_WAIT";
+	if(state==MIB2_TCP_lastAck)
+		return "LAST_ACK";
+	if(state==MIB2_TCP_listen)
+		return "LISTEN";
+	if(state==MIB2_TCP_closing)
+		return "CLOSING";
+	
+	return "UNKNOWN";
+}
+
 struct netstat_t
 {
         std::string proto;
@@ -142,6 +170,11 @@ int main()
 	std::cout<<"\tputmsg\t\t"<<putmsg(fd,&buf,NULL,0)<<std::endl;
 	std::cout<<std::endl;
 
+	netstat_list_t tcp4;
+	netstat_list_t tcp6;
+	netstat_list_t udp4;
+	netstat_list_t udp6;
+
 	while(true)
 	{
 		strbuf buf2;
@@ -193,12 +226,15 @@ int main()
 			{
 				for (mib2_tcpConnEntry_t* entry=(mib2_tcpConnEntry_t*)data;(char*)(entry+1)<=(char*)data+buf2.len;++entry)
 				{
-					std::cout<<"tcp4\t";
-					std::cout<<uint32_t_to_ipv4(entry->tcpConnLocalAddress)<<":"<<
-						dword_to_port(htons(entry->tcpConnLocalPort))<<"\t";
-					std::cout<<uint32_t_to_ipv4(entry->tcpConnRemAddress)<<":"<<
-						dword_to_port(htons(entry->tcpConnRemPort))<<"\t";
-					std::cout<<entry->tcpConnState<<std::endl;
+					netstat_t netstat;
+					netstat.proto="tcp4";
+					netstat.local_address=uint32_t_to_ipv4(entry->tcpConnLocalAddress);
+					netstat.foreign_address=uint32_t_to_ipv4(entry->tcpConnRemAddress);
+					netstat.local_port=dword_to_port(htons(entry->tcpConnLocalPort));
+					netstat.foreign_port=dword_to_port(htons(entry->tcpConnRemPort));
+					netstat.state=state_int_to_string(entry->tcpConnState);
+					netstat.pid="-";
+					tcp4.push_back(netstat);
 				}
 			}
 
@@ -206,12 +242,15 @@ int main()
 			{
 				for (mib2_tcp6ConnEntry_t* entry=(mib2_tcp6ConnEntry_t*)data;(char*)(entry+1)<=(char*)data+buf2.len;++entry)
 				{
-					std::cout<<"tcp6\t";
-					std::cout<<uint8_t_16_to_ipv6(entry->tcp6ConnLocalAddress.s6_addr)<<":"<<
-						dword_to_port(htons(entry->tcp6ConnLocalPort))<<"\t";
-					std::cout<<uint8_t_16_to_ipv6(entry->tcp6ConnRemAddress.s6_addr)<<":"<<
-						dword_to_port(htons(entry->tcp6ConnRemPort))<<"\t";
-					std::cout<<entry->tcp6ConnState<<std::endl;
+					netstat_t netstat;
+					netstat.proto="tcp6";
+					netstat.local_address=uint8_t_16_to_ipv6(entry->tcp6ConnLocalAddress.s6_addr);
+					netstat.foreign_address=uint8_t_16_to_ipv6(entry->tcp6ConnRemAddress.s6_addr);
+					netstat.local_port=dword_to_port(htons(entry->tcp6ConnLocalPort));
+					netstat.foreign_port=dword_to_port(htons(entry->tcp6ConnRemPort));
+					netstat.state=state_int_to_string(entry->tcp6ConnState);
+					netstat.pid="-";
+					tcp6.push_back(netstat);
 				}
 			}
 
@@ -219,11 +258,15 @@ int main()
 			{
 				for (mib2_udpEntry_t* entry=(mib2_udpEntry_t*)data;(char*)(entry+1)<=(char*)data+buf2.len;++entry)
 				{
-					std::cout<<"udp4\t";
-					std::cout<<uint32_t_to_ipv4(entry->udpLocalAddress)<<":"<<
-						dword_to_port(htons(entry->udpLocalPort))<<"\t";
-					std::cout<<"0.0.0.0:0\t";
-					std::cout<<"-"<<std::endl;
+					netstat_t netstat;
+					netstat.proto="udp4";
+					netstat.local_address=uint32_t_to_ipv4(entry->udpLocalAddress);
+					netstat.foreign_address="0.0.0.0";
+					netstat.local_port=dword_to_port(htons(entry->udpLocalPort));
+					netstat.foreign_port="0";
+					netstat.state="-";
+					netstat.pid="-";
+					udp4.push_back(netstat);
 				}
 			}
 
@@ -231,17 +274,34 @@ int main()
 			{
 				for (mib2_udp6Entry_t* entry=(mib2_udp6Entry_t*)data;(char*)(entry+1)<=(char*)data+buf2.len;++entry)
 				{
-					std::cout<<"udp6\t";
-					std::cout<<uint8_t_16_to_ipv6(entry->udp6LocalAddress.s6_addr)<<":"<<
-						dword_to_port(htons(entry->udp6LocalPort))<<"\t";
-					std::cout<<"0000:0000:0000:0000:0000:0000:0000:0000:0\t";
-					std::cout<<"-"<<std::endl;
+					netstat_t netstat;
+					netstat.proto="udp6";
+					netstat.local_address=uint8_t_16_to_ipv6(entry->udp6LocalAddress.s6_addr);
+					netstat.foreign_address="0000:0000:0000:0000:0000:0000:0000:0000";
+					netstat.local_port=dword_to_port(htons(entry->udp6LocalPort));
+					netstat.foreign_port="0";
+					netstat.state="-";
+					netstat.pid="-";
+					udp6.push_back(netstat);
 				}
 			}
 		}
 
 		free(data);
 	}
+
+	netstat_list_t netstats;
+
+        for(size_t ii=0;ii<tcp4.size();++ii)
+                netstats.push_back(tcp4[ii]);
+        for(size_t ii=0;ii<tcp6.size();++ii)
+                netstats.push_back(tcp6[ii]);
+        for(size_t ii=0;ii<udp4.size();++ii)
+                netstats.push_back(udp4[ii]);
+        for(size_t ii=0;ii<udp6.size();++ii)
+                netstats.push_back(udp6[ii]);
+
+	netstat_list_print(netstats);
 
 	return 0;
 }

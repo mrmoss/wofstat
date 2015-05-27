@@ -1,5 +1,3 @@
-#define NEW_MIB_COMPLIANT true
-
 #include <iomanip>
 #include <iostream>
 #include <stdint.h>
@@ -240,7 +238,7 @@ int main()
 		{
 			if(reply.opt_header.level==MIB2_TCP&&reply.opt_header.name==MIB2_TCP_CONN)
 			{
-				for(int ii=0;ii<buf2.len;ii+=sizeof(mib2_tcpConnEntry_t)+4)
+				for(int ii=0;ii<buf2.len;ii+=sizeof(mib2_tcpConnEntry_t))
 				{
 					mib2_tcpConnEntry_t* entry=(mib2_tcpConnEntry_t*)((char*)data+ii);
 
@@ -256,18 +254,13 @@ int main()
 					#if(defined(NEW_MIB_COMPLIANT)||defined(_KERNEL))
 						netstat.pid=to_string(entry->tcpConnCreationProcess);
 					#endif
-
-					/*tcp4.push_back(netstat);
-					for(int jj=15;jj>=0;--jj)
-						std::cout<<std::hex<<std::setw(2)<<std::setfill('0')<<(unsigned int)(unsigned char)((char*)entry)[sizeof(mib2_tcpConnEntry_t)+jj];
-					std::cout<<std::setfill(' ')<<std::endl;*/
 				}
 			}
 
 			#if(defined(MIB2_TCP6))
 				if(reply.opt_header.level==MIB2_TCP6&&reply.opt_header.name==MIB2_TCP6_CONN)
 				{
-					for(int ii=0;ii<buf2.len;ii+=sizeof(mib2_tcp6ConnEntry_t)+4)
+					for(int ii=0;ii<buf2.len;ii+=sizeof(mib2_tcp6ConnEntry_t))
 					{
 						mib2_tcp6ConnEntry_t* entry=(mib2_tcp6ConnEntry_t*)((char*)data+ii);
 
@@ -291,7 +284,7 @@ int main()
 
 			if(reply.opt_header.level==MIB2_UDP&&reply.opt_header.name==MIB2_UDP_ENTRY)
 			{
-				for(int ii=0;ii<buf2.len;ii+=sizeof(mib2_udpEntry_t)+4)
+				for(int ii=0;ii<buf2.len;ii+=sizeof(mib2_udpEntry_t))
 				{
 					mib2_udpEntry_t* entry=(mib2_udpEntry_t*)((char*)data+ii);
 
@@ -315,7 +308,7 @@ int main()
 			#if(defined(MIB2_UDP6))
 				if(reply.opt_header.level==MIB2_UDP6&&reply.opt_header.name==MIB2_UDP6_ENTRY)
 				{
-					for(int ii=0;ii<buf2.len;ii+=sizeof(mib2_udp6Entry_t)+4)
+					for(int ii=0;ii<buf2.len;ii+=sizeof(mib2_udp6Entry_t))
 					{
 						mib2_udp6Entry_t* entry=(mib2_udp6Entry_t*)((char*)data+ii);
 

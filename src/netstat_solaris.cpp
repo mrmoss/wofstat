@@ -1,3 +1,7 @@
+//Tested on:
+//	solaris 10 (g++)
+//	solaris 11 (g++)
+
 #include <iomanip>
 #include <iostream>
 #include <stdint.h>

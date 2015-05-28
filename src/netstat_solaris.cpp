@@ -254,6 +254,8 @@ int main()
 					#if(defined(SOLARIS_112))
 						netstat.pid=to_string(entry->tcpConnCreationProcess);
 					#endif
+
+					tcp4.push_back(netstat);
 				}
 			}
 

@@ -5,6 +5,7 @@
 //	Fedora 10 (g++)
 //	Debian 3.2.0 (g++)
 //	openSUSE 13.1 (g++)
+//	CentOS 5.7 (g++)
 
 #include <algorithm>
 #include <cstdio>

@@ -18,5 +18,8 @@ solaris: $(SRC)/netstat_solaris.cpp
 solaris_112: $(SRC)/netstat_solaris.cpp
 	$(CXX) $(CFLAGS) -DSOLARIS_112 $^ -o $@
 
+bsd: $(SRC)/netstat_bsd.cpp
+	$(CXX) $(CFLAGS) $^ -o $@
+
 clean:
-	- rm -f linux windows solaris solaris_112
+	- rm -f linux windows solaris solaris_112 bsd

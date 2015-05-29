@@ -3,7 +3,7 @@
 #include <sys/sysctl.h>
 #include <sys/socket.h>
 
-#include <sys/param.h>
+#include <sys/user.h>
 
 #define PF_LIST_INET	1
 

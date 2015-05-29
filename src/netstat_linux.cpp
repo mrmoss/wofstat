@@ -3,6 +3,8 @@
 //	Ubuntu 14.04 (g++)
 //	Kali 1.0.9 (g++)
 //	Fedora 10 (g++)
+//	Debian 3.2.0 (g++)
+//	openSUSE 13.1 (g++)
 
 #include <algorithm>
 #include <cstdio>

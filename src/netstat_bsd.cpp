@@ -92,7 +92,7 @@ void get_sockets(const char *mib)
 
 	name[namelen++] = PF_INET;
 	name[namelen++] = 0;		// XXX all pids
-	name[namelen++] = sizeof(struct kinfo_pcb);
+	name[namelen++] = 10000
 	name[namelen++] = INT_MAX;	// all of them
 
 	sysctl_sucker(&name[0], namelen, &v, &sz);

@@ -8,6 +8,9 @@
 	#define PF_LIST_INET6	2
 #endif
 
+void sysctl_sucker(int *name, u_int namelen, void **vp, size_t *szp);
+void get_sockets(const char *mib);
+
 int main()
 {
 	get_sockets("net.inet6.tcp6.pcblist");

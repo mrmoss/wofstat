@@ -10,7 +10,7 @@
 
 int main()
 {
-	int name=-;
+	int name=0;
 	size_t size=CTL_MAXNAME;
 	std::cout<<"sysctlnametomib  "<<sysctlnametomib("net.inet.tcp.pcblist",&name,&size)<<std::endl;
 

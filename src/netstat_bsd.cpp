@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sys/types.h>
 #include <sys/sysctl.h>
 #include <sys/socket.h>
 
@@ -10,9 +11,10 @@
 
 int main()
 {
-	int name=0;
+	std::string name="net.inet.tcp.pcblist";
+	int mibp=-1;
 	size_t size=CTL_MAXNAME;
-	std::cout<<"sysctlnametomib  "<<sysctlnametomib("net.inet.tcp.pcblist",&name,&size)<<std::endl;
+	std::cout<<"sysctlnametomib  "<<sysctlnametomib(name.c_str(),&mibp,&size)<<std::endl;
 
 	return 0;
 }

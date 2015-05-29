@@ -1,6 +1,17 @@
 #include <iostream>
+#include <sys/types.h>
+#include <sys/param.h>
 #include <sys/sysctl.h>
 #include <sys/socket.h>
+#include <sys/socketvar.h>
+#include <sys/un.h>
+#include <netinet/in.h>
+#include <net/route.h>
+#include <netinet/in_systm.h>
+#include <netinet/ip.h>
+#include <netinet/in_pcb.h>
+#include <netinet/in_pcb_hdr.h>
+#include <netinet/tcp_fsm.h>
 
 #define PF_LIST_INET	1
 

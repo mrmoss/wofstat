@@ -29,7 +29,7 @@ void sysctl_sucker(int *name, u_int namelen, void **vp, size_t *szp)
 	v = NULL;
 	sz = 0;
 	do {
-		rc = prog_sysctl(&name[0], namelen, v, &sz, NULL, 0);
+		rc = sysctl(&name[0], namelen, v, &sz, NULL, 0);
 		if (rc == -1 && errno != ENOMEM)
 			err(1, "sysctl");
 		if (rc == -1 && v != NULL) {

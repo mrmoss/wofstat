@@ -1,5 +1,6 @@
 #include <iostream>
 #include <sys/sysctl.h>
+#include <netinet/in.h>
 
 int main()
 {

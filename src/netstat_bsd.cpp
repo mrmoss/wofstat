@@ -96,6 +96,6 @@ void get_sockets(const char *mib)
 	name[namelen++] = INT_MAX;	// all of them
 
 	sysctl_sucker(&name[0], namelen, &v, &sz);
-	n = sz / sizeof(struct kinfo_pcb);
+	n = sz / 10000;
 	socket_add_hash(v, n);
 }

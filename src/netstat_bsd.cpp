@@ -2,12 +2,8 @@
 #include <sys/types.h>
 #include <sys/sysctl.h>
 #include <sys/socket.h>
-#include <unistd.h>
-#include <pwd.h>
-#include <kvm.h>
+
 #include <sys/param.h>
-#include <sys/sysctl.h>
-#include <sys/user.h>
 
 #define PF_LIST_INET	1
 

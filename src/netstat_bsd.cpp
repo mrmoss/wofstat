@@ -1,6 +1,8 @@
 #include <iostream>
 #include <sys/sysctl.h>
 #include <netinet/in.h>
+#include <net/if.h>
+#include <net/route.h>
 
 int main()
 {

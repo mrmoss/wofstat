@@ -11,10 +11,21 @@
 
 int main()
 {
-	std::string name="net.inet.tcp.pcblist";
-	int mibp=-1;
-	size_t size=CTL_MAXNAME;
-	std::cout<<"sysctlnametomib  "<<sysctlnametomib(name.c_str(),&mibp,&size)<<std::endl;
+	int mib[4];
+	size_t len=4;
+	kinfo_proc kp;
+
+	std::cout<<sysctlnametomib("kern.proc.pid",mib,&len)<<std::endl;
+
+	for(int ii=0;ii<100;++ii)
+	{
+		mib[3]=ii;
+		len=sizeof(kp);
+		if(sysctl(mib,4,&kp,&len,NULL,0)==-1)
+			std::cout<<"["<<ii<<"]\tfail"<<std::endl;
+
+		std::cout<<"["<<ii<<"]\tsuccess"<<std::endl;
+	}
 
 	return 0;
 }

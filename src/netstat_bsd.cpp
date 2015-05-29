@@ -22,6 +22,10 @@
 #include <strings.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <netinet/tcp.h>
+#include <netinet/tcp_timer.h>
+#include <netinet/tcpip.h>
+#include <netinet/tcp_var.h>
 
 #define PF_LIST_INET	1
 

@@ -45,7 +45,7 @@ int main()
 	return 0;
 }
 
-void get_sockets(const char *mib)
+/*void get_sockets(const char *mib)
 {
 	void *v;
 	size_t sz;
@@ -70,3 +70,4 @@ void get_sockets(const char *mib)
 	n = sz / 10000;
 	socket_add_hash(v, n);
 }
+*/

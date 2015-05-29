@@ -10,7 +10,6 @@
 #include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/in_pcb.h>
-#include <netinet/in_pcb_hdr.h>
 #include <netinet/tcp_fsm.h>
 #include <arpa/inet.h>
 #include <bitstring.h>
@@ -23,7 +22,6 @@
 #include <strings.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <util.h>
 
 #define PF_LIST_INET	1
 

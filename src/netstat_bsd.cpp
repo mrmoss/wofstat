@@ -85,13 +85,14 @@ void get_sockets(const char *mib)
 		err(1, "sysctlnametomib: %s", mib);
 	}
 	namelen = sz;
-
+/*
 	name[namelen++] = PCB_ALL;
-	name[namelen++] = 0;		/* XXX all pids */
+	name[namelen++] = 0;		// XXX all pids
 	name[namelen++] = sizeof(struct kinfo_pcb);
-	name[namelen++] = INT_MAX;	/* all of them */
+	name[namelen++] = INT_MAX;	// all of them
 
 	sysctl_sucker(&name[0], namelen, &v, &sz);
 	n = sz / sizeof(struct kinfo_pcb);
 	socket_add_hash(v, n);
+*/
 }

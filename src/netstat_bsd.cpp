@@ -19,7 +19,7 @@ int main()
 
 	std::cout<<sysctlnametomib("kern.proc.pid",mib,&len)<<std::endl;
 
-	for(int ii=0;ii<100;++ii)
+	for(int ii=0;ii<10;++ii)
 	{
 		mib[3]=ii;
 		len=sizeof(kp);

@@ -1,60 +1,82 @@
+#include <iomanip>
 #include <iostream>
+#include <string>
+#include <stdint.h>
+#include <sstream>
+
 #include <sys/types.h>
 #include <sys/sysctl.h>
 #include <sys/socket.h>
+#include <sys/socketvar.h>
 
-#include <sys/user.h>
+#include <netinet/in.h>
+#include <netinet/in_pcb.h>
 
-#define PF_LIST_INET	1
+#include <netinet/ip.h>
+#include <netinet/ip_var.h>
 
-#ifdef INET6
-	#define PF_LIST_INET6	2
-#endif
+#include <netinet/tcp.h>
+#include <netinet/tcp_fsm.h>
+#include <netinet/tcp_var.h>
+
+//pcblist
+
+std::string uint32_t_to_ipv4(const uint32_t address)
+{
+	std::ostringstream ostr;
+	ostr<<(uint32_t)((uint8_t*)&address)[0]<<"."<<
+		(uint32_t)((uint8_t*)&address)[1]<<"."<<
+		(uint32_t)((uint8_t*)&address)[2]<<"."<<
+		(uint32_t)((uint8_t*)&address)[3];
+	return ostr.str();
+}
+
+std::string uint16_t_to_port(const uint16_t port)
+{
+	std::ostringstream ostr;
+	ostr<<((((uint32_t)((uint8_t*)&port)[0])<<8)+((uint8_t*)&port)[1]);
+	return ostr.str();
+}
 
 int main()
 {
-	int mib[4];
-	size_t len=4;
-	kinfo_proc kp;
+	size_t len=0;
 
-	std::cout<<sysctlnametomib("kern.proc.pid",mib,&len)<<std::endl;
-
-	for(int ii=0;ii<10;++ii)
+	if(sysctlbyname("net.inet.tcp.pcblist",NULL,&len,NULL,0)==-1)
 	{
-		mib[3]=ii;
-		len=sizeof(kp);
-		if(sysctl(mib,4,&kp,&len,NULL,0)==-1)
-			std::cout<<"["<<ii<<"]\tfail"<<std::endl;
-
-		std::cout<<"["<<ii<<"]\tsuccess"<<std::endl;
+		std::cout<<"error getting data size"<<std::endl;
+		return 1;
 	}
+
+	char* buf=(char*)malloc(len);
+
+	if(sysctlbyname("net.inet.tcp.pcblist",buf,&len,NULL,0)==-1)
+	{
+		std::cout<<"error getting data"<<std::endl;
+		return 1;
+	}
+
+	for(size_t ii=0;ii<len;)
+	{
+		xtcpcb* entry=(xtcpcb*)(buf+ii);
+
+		if(entry->xt_inp.inp_vflag&INP_IPV4)
+		{
+			std::cout<<
+				uint32_t_to_ipv4(*(uint32_t*)&entry->xt_inp.inp_laddr)<<
+				":"<<
+				uint16_t_to_port(entry->xt_inp.inp_lport)<<
+				"\t"<<
+				uint32_t_to_ipv4(*(uint32_t*)&entry->xt_inp.inp_faddr)<<
+				":"<<
+				uint16_t_to_port(entry->xt_inp.inp_fport)<<
+				std::endl;
+		}
+
+		ii+=((xinpgen*)(buf+ii))->xig_len;
+	}
+
+	free(buf);
 
 	return 0;
 }
-
-/*void get_sockets(const char *mib)
-{
-	void *v;
-	size_t sz;
-	int rc, n, name[CTL_MAXNAME];
-	u_int namelen;
-
-	sz = CTL_MAXNAME;
-	rc = sysctlnametomib(mib, &name[0], &sz);
-	if (rc == -1) {
-		if (errno == ENOENT)
-			return;
-		err(1, "sysctlnametomib: %s", mib);
-	}
-	namelen = sz;
-
-	name[namelen++] = PF_INET;
-	name[namelen++] = 0;		// XXX all pids
-	name[namelen++] = 10000
-	name[namelen++] = INT_MAX;	// all of them
-
-	sysctl_sucker(&name[0], namelen, &v, &sz);
-	n = sz / 10000;
-	socket_add_hash(v, n);
-}
-*/

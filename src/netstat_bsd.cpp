@@ -3,13 +3,13 @@
 //	FreeBSD 10.0 (g++)
 
 #include <cstdlib>
+#include <stdexcept>
 #include <iomanip>
 #include <iostream>
 #include <string>
 #include <stdint.h>
 #include <sstream>
 #include <vector>
-#include <stdexcept>
 
 #include <sys/types.h>
 #include <sys/sysctl.h>
@@ -18,7 +18,6 @@
 
 #include <netinet/in.h>
 #include <netinet/in_pcb.h>
-
 #include <netinet/tcp_var.h>
 
 std::string uint32_t_to_ipv4(const uint32_t address)
@@ -34,8 +33,8 @@ std::string uint32_t_to_ipv4(const uint32_t address)
 std::string in6_addr_to_ipv6(const in6_addr& address)
 {
 	uint8_t* addr=(uint8_t*)&address;
-
 	std::ostringstream ostr;
+
 	for(int ii=0;ii<16;ii+=2)
 	{
 		ostr<<std::hex<<std::setw(2)<<std::setfill('0')<<(unsigned int)(unsigned char)addr[ii+0];

@@ -138,6 +138,7 @@ static netstat_list_t netstat_linux_parse(const std::string& proto,const std::st
 	}
 
 	netstat_list_t netstats;
+	list_t inodes;
 
 	for(size_t ii=0;ii<table.size();++ii)
 	{
@@ -163,7 +164,7 @@ static netstat_list_t netstat_linux_parse(const std::string& proto,const std::st
 		else
 			netstat.state=hex_to_state(table[ii][5]);
 
-		netstat.inode=table[ii][13];
+		inodes.push_back(table[ii][13]);
 		netstat.pid="-";
 		netstats.push_back(netstat);
 	}
@@ -174,7 +175,7 @@ static netstat_list_t netstat_linux_parse(const std::string& proto,const std::st
 		{
 			if(starts_with(pid_lookups[jj].second,"socket:[")&&ends_with(pid_lookups[jj].second,"]"))
 			{
-				if(netstats[ii].inode==pid_lookups[jj].second.substr(8,pid_lookups[jj].second.size()-9))
+				if(inodes[ii]==pid_lookups[jj].second.substr(8,pid_lookups[jj].second.size()-9))
 				{
 					netstats[ii].pid=pid_lookups[jj].first;
 					break;

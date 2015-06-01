@@ -12,7 +12,6 @@ struct netstat_t
 	std::string local_port;
 	std::string foreign_port;
 	std::string state;
-	std::string inode;
 	std::string pid;
 };
 

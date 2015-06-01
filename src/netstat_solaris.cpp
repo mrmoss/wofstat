@@ -1,6 +1,6 @@
 //Tested on:
-//	solaris 10 (g++)
-//	solaris 11 (g++)
+//	Solaris 10.1 (g++)
+//	Solaris 11.2 (g++)
 
 #include "netstat.hpp"
 

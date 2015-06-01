@@ -1,7 +1,7 @@
 //-lIPHlpApi -lWs2_32
 //http://forums.codeguru.com/showthread.php?188092.html
 //Tested on:
-//	Windows XP SP3 (MinGW)
+//	Windows XP SP3 (VS2008, MinGW FAILS DUE TO HEADER DECLARATION CHANGES)
 //	Windows 7 (VS2013, MinGW FAILS DUE TO HEADER DECLARATION CHANGES)
 //	Windows 8.1 (VS2013, MinGW FAILS DUE TO HEADER DECLARATION CHANGES)
 

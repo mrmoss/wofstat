@@ -91,18 +91,18 @@ std::string state_int_to_string(const uint32_t state)
 	return "UNKNOWN";
 }
 
-int main()
+netstat_list_t netstat()
 {
 	int fd=open("/dev/arp",O_RDWR);
 
 	if(fd==-1)
-		return 1;
+		throw std::runtime_error("netstat_solaris() - Could not find /dev/arp.");
 
 	if(ioctl(fd,I_PUSH,"tcp")==-1)
-		return 1;
+		throw std::runtime_error("netstat_solaris() - Could not push module tcp into /dev/arp.");
 
 	if(ioctl(fd,I_PUSH,"udp")==-1)
-		return 1;
+		throw std::runtime_error("netstat_solaris() - Could not push module udp into /dev/arp.");
 
 	request_t request;
 
@@ -111,7 +111,7 @@ int main()
 	buf.buf=(char*)&request;
 
 	if(putmsg(fd,&buf,NULL,0)<0)
-		return 1;
+		throw std::runtime_error("netstat_solaris() - putmsg failed for /dev/arp.");
 
 	netstat_list_t tcp4;
 	netstat_list_t tcp6;
@@ -128,39 +128,25 @@ int main()
 		int ret=getmsg(fd,&buf2,NULL,&flags);
 
 		if(ret<0)
-		{
-			std::cout<<"ret<0"<<std::endl;
-			return 1;
-		}
+			throw std::runtime_error("netstat_solaris() - getmsg failed for /dev/arp.");
 
 		if(ret!=MOREDATA)
 			break;
 
 		if(reply.ack_header.PRIM_type!=T_OPTMGMT_ACK)
-		{
-			std::cout<<"primtype"<<std::endl;
-			return 1;
-		}
+			throw std::runtime_error("netstat_solaris() - Invalid acknowledgement header primative type from getmsg.");
 
-		if((unsigned int)buf2.len<sizeof(reply.ack_header))
-		{
-			std::cout<<"buf2len"<<std::endl;
-			return 1;
-		}
+		if((size_t)buf2.len<sizeof(reply.ack_header))
+			throw std::runtime_error("netstat_solaris() - Invalid buffer length received from getmsg.");
 
-		if((unsigned int)reply.ack_header.OPT_length<sizeof(reply.opt_header))
-		{
-			std::cout<<"optlength"<<std::endl;
-			return 1;
-		}
+		if((size_t)reply.ack_header.OPT_length<sizeof(reply.opt_header))
+			throw std::runtime_error("netstat_solaris() - Invalid option length received from getmsg.");
 
-		void* data=malloc(reply.opt_header.len);
-
-		if(data==NULL)
-			return 1;
+		std::vector<uint8_t> data;
+		data.resize(reply.opt_header.len);
 
 		buf2.maxlen=reply.opt_header.len;
-		buf2.buf=(char*)data;
+		buf2.buf=(char*)&data[0];
 		flags=0;
 
 		if(getmsg(fd,NULL,&buf2,&flags)>=0)
@@ -169,7 +155,7 @@ int main()
 			{
 				for(int ii=0;ii<buf2.len;ii+=sizeof(mib2_tcpConnEntry_t))
 				{
-					mib2_tcpConnEntry_t* entry=(mib2_tcpConnEntry_t*)((char*)data+ii);
+					mib2_tcpConnEntry_t* entry=(mib2_tcpConnEntry_t*)((char*)&data[0]+ii);
 
 					netstat_t netstat;
 					netstat.proto="tcp4";
@@ -193,7 +179,7 @@ int main()
 				{
 					for(int ii=0;ii<buf2.len;ii+=sizeof(mib2_tcp6ConnEntry_t))
 					{
-						mib2_tcp6ConnEntry_t* entry=(mib2_tcp6ConnEntry_t*)((char*)data+ii);
+						mib2_tcp6ConnEntry_t* entry=(mib2_tcp6ConnEntry_t*)((char*)&data[0]+ii);
 
 						netstat_t netstat;
 						netstat.proto="tcp6";
@@ -217,7 +203,7 @@ int main()
 			{
 				for(int ii=0;ii<buf2.len;ii+=sizeof(mib2_udpEntry_t))
 				{
-					mib2_udpEntry_t* entry=(mib2_udpEntry_t*)((char*)data+ii);
+					mib2_udpEntry_t* entry=(mib2_udpEntry_t*)((char*)&data[0]+ii);
 
 					netstat_t netstat;
 					netstat.proto="udp4";
@@ -241,7 +227,7 @@ int main()
 				{
 					for(int ii=0;ii<buf2.len;ii+=sizeof(mib2_udp6Entry_t))
 					{
-						mib2_udp6Entry_t* entry=(mib2_udp6Entry_t*)((char*)data+ii);
+						mib2_udp6Entry_t* entry=(mib2_udp6Entry_t*)((char*)&data[0]+ii);
 
 						netstat_t netstat;
 						netstat.proto="udp6";
@@ -261,8 +247,6 @@ int main()
 				}
 			#endif
 		}
-
-		free(data);
 	}
 
 	netstat_list_t netstats;
@@ -276,7 +260,5 @@ int main()
 	for(size_t ii=0;ii<udp6.size();++ii)
 			netstats.push_back(udp6[ii]);
 
-	netstat_list_print(netstats);
-
-	return 0;
+	return netstats;
 }

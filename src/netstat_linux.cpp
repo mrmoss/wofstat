@@ -184,7 +184,7 @@ netstat_list_t netstat_linux_parse(const std::string& proto,const std::string& d
 	return netstats;
 }
 
-netstat_list_t netstat_linux()
+netstat_list_t netstat()
 {
 	lookup_list_t pid_lookups;
 	list_t directories=list_directories("/proc");
@@ -250,12 +250,4 @@ netstat_list_t netstat_linux()
 			netstats.push_back(udp6[ii]);
 
 	return netstats;
-}
-
-int main()
-{
-	netstat_list_t netstats=netstat_linux();
-	netstat_list_print(netstats);
-
-	return 0;
 }

@@ -35,13 +35,11 @@ netstat_list_t netstat_bsd_parse(const std::string& proto)
 	if(sysctlbyname("kern.file",NULL,&xflen,NULL,0)==-1)
 		throw std::runtime_error("error getting data size.");
 
-	char* xfbuf=(char*)malloc(xflen);
+	std::vector<uint8_t> xfbuf;
+	xfbuf.resize(xflen);
 
-	if(sysctlbyname("kern.file",xfbuf,&xflen,NULL,0)==-1)
-	{
-		free(xfbuf);
+	if(sysctlbyname("kern.file",(char*)&xfbuf[0],&xflen,NULL,0)==-1)
 		throw std::runtime_error("error getting data.");
-	}
 
 	netstat_list_t netstats;
 
@@ -61,30 +59,21 @@ netstat_list_t netstat_bsd_parse(const std::string& proto)
 	#endif
 
 	if(sysctl_path=="")
-	{
-		free(xfbuf);
 		throw std::runtime_error("Invalid protocol.");
-	}
 
 	if(sysctlbyname(sysctl_path.c_str(),NULL,&len,NULL,0)==-1)
-	{
-		free(xfbuf);
 		throw std::runtime_error("error getting data size.");
-	}
 
-	char* buf=(char*)malloc(len);
+	std::vector<uint8_t> buf;
+	buf.resize(len);
 
-	if(sysctlbyname(sysctl_path.c_str(),buf,&len,NULL,0)==-1)
-	{
-		free(xfbuf);
-		free(buf);
+	if(sysctlbyname(sysctl_path.c_str(),(char*)&buf[0],&len,NULL,0)==-1)
 		throw std::runtime_error("error getting data.");
-	}
 
 	for(size_t ii=0;ii<len;)
 	{
-		xtcpcb* entry_tcp=(xtcpcb*)(buf+ii);
-		xinpcb* entry_udp=(xinpcb*)(buf+ii);
+		xtcpcb* entry_tcp=(xtcpcb*)((char*)&buf[0]+ii);
+		xinpcb* entry_udp=(xinpcb*)((char*)&buf[0]+ii);
 
 		if(proto=="tcp4"&&entry_tcp->xt_inp.inp_vflag&INP_IPV4)
 		{
@@ -103,7 +92,7 @@ netstat_list_t netstat_bsd_parse(const std::string& proto)
 
 			for(size_t ii=0;ii<xflen;ii+=sizeof(xfile))
 			{
-				xfile* xf=(xfile*)(xfbuf+ii);
+				xfile* xf=(xfile*)((char*)&xfbuf[0]+ii);
 
 				if((void*)entry_tcp->xt_socket.xso_so==xf->xf_data)
 				{
@@ -128,7 +117,7 @@ netstat_list_t netstat_bsd_parse(const std::string& proto)
 
 			for(size_t ii=0;ii<xflen;ii+=sizeof(xfile))
 			{
-				xfile* xf=(xfile*)(xfbuf+ii);
+				xfile* xf=(xfile*)((char*)&xfbuf[0]+ii);
 
 				if((void*)entry_udp->xi_socket.xso_so==xf->xf_data)
 				{
@@ -158,7 +147,7 @@ netstat_list_t netstat_bsd_parse(const std::string& proto)
 
 				for(size_t ii=0;ii<xflen;ii+=sizeof(xfile))
 				{
-					xfile* xf=(xfile*)(xfbuf+ii);
+					xfile* xf=(xfile*)((char*)&xfbuf[0]+ii);
 
 					if((void*)entry_tcp->xt_socket.xso_so==xf->xf_data)
 					{
@@ -183,7 +172,7 @@ netstat_list_t netstat_bsd_parse(const std::string& proto)
 
 				for(size_t ii=0;ii<xflen;ii+=sizeof(xfile))
 				{
-					xfile* xf=(xfile*)(xfbuf+ii);
+					xfile* xf=(xfile*)((char*)&xfbuf[0]+ii);
 
 					if((void*)entry_udp->xi_socket.xso_so==xf->xf_data)
 					{
@@ -196,15 +185,13 @@ netstat_list_t netstat_bsd_parse(const std::string& proto)
 			}
 		#endif
 
-		ii+=((xinpgen*)(buf+ii))->xig_len;
+		ii+=((xinpgen*)((char*)&buf[0]+ii))->xig_len;
 	}
 
-	free(xfbuf);
-	free(buf);
 	return netstats;
 }
 
-netstat_list_t netstat_bsd()
+netstat_list_t netstat()
 {
 	netstat_list_t netstats;
 	netstat_list_t tcp4=netstat_bsd_parse("tcp4");
@@ -232,10 +219,4 @@ netstat_list_t netstat_bsd()
 	#endif
 
 	return netstats;
-}
-
-int main()
-{
-	netstat_list_print(netstat_bsd());
-	return 0;
 }

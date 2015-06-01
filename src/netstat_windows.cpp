@@ -465,7 +465,7 @@ netstat_list_t netstat_windows_parse_udp4()
 
 #endif
 
-netstat_list_t netstat_windows()
+netstat_list_t netstat()
 {
 	netstat_list_t tcp4=netstat_windows_parse_tcp4();
 	netstat_list_t udp4=netstat_windows_parse_udp4();
@@ -494,11 +494,4 @@ netstat_list_t netstat_windows()
 	#endif
 
 	return netstats;
-}
-
-int main()
-{
-	netstat_list_t netstats=netstat_windows();
-	netstat_list_print(netstats);
-	return 0;
 }

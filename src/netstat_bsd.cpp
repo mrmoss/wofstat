@@ -23,86 +23,10 @@
 
 #include <errno.h>
 
-std::string uint32_t_to_ipv4(const uint32_t address)
-{
-	std::ostringstream ostr;
-	ostr<<(uint32_t)((uint8_t*)&address)[0]<<"."<<
-		(uint32_t)((uint8_t*)&address)[1]<<"."<<
-		(uint32_t)((uint8_t*)&address)[2]<<"."<<
-		(uint32_t)((uint8_t*)&address)[3];
-	return ostr.str();
-}
+#include "netstat_util.hpp"
+#include "string_util.hpp"
 
-std::string in6_addr_to_ipv6(const in6_addr& address)
-{
-	uint8_t* addr=(uint8_t*)&address;
-	std::ostringstream ostr;
-
-	for(int ii=0;ii<16;ii+=2)
-	{
-		ostr<<std::hex<<std::setw(2)<<std::setfill('0')<<(unsigned int)(unsigned char)addr[ii+0];
-		ostr<<std::hex<<std::setw(2)<<std::setfill('0')<<(unsigned int)(unsigned char)addr[ii+1];
-
-		if(ii<14)
-			ostr<<":";
-	}
-
-	return ostr.str();
-}
-
-std::string uint16_t_to_port(const uint16_t port)
-{
-	std::ostringstream ostr;
-	ostr<<((((uint32_t)((uint8_t*)&port)[0])<<8)+((uint8_t*)&port)[1]);
-	return ostr.str();
-}
-
-std::string to_string(const uint32_t val)
-{
-	std::ostringstream ostr;
-	ostr<<val;
-	return ostr.str();
-}
-
-struct netstat_t
-{
-	std::string proto;
-	std::string local_address;
-	std::string foreign_address;
-	std::string local_port;
-	std::string foreign_port;
-	std::string state;
-	std::string inode;
-	std::string pid;
-};
-
-typedef std::vector<netstat_t> netstat_list_t;
 typedef std::vector<xfile*> xfilep_list_t;
-
-void netstat_print(const netstat_t& netstat)
-{
-	std::cout<<
-		std::setw(4)<<netstat.proto<<" "<<
-		std::setw(64)<<netstat.local_address+":"+netstat.local_port<<" "<<
-		std::setw(64)<<netstat.foreign_address+":"+netstat.foreign_port<<" "<<
-		std::setw(16)<<netstat.state<<" "<<
-		std::setw(8)<<netstat.pid<<" "<<
-		std::endl;
-}
-
-void netstat_list_print(const netstat_list_t& netstats)
-{
-	std::cout<<
-		std::setw(4)<<"proto "<<
-		std::setw(64)<<"local_address "<<
-		std::setw(64)<<"foreign_address "<<
-		std::setw(16)<<"state "<<
-		std::setw(8)<<"pid "<<
-		std::endl;
-
-	for(size_t ii=0;ii<netstats.size();++ii)
-			netstat_print(netstats[ii]);
-}
 
 netstat_list_t netstat_bsd_parse(const std::string& proto)
 {
@@ -221,8 +145,8 @@ netstat_list_t netstat_bsd_parse(const std::string& proto)
 			{
 				netstat_t netstat;
 				netstat.proto=proto;
-				netstat.local_address=in6_addr_to_ipv6(entry_tcp->xt_inp.in6p_laddr);
-				netstat.foreign_address=in6_addr_to_ipv6(entry_tcp->xt_inp.in6p_faddr);
+				netstat.local_address=uint8_t_16_to_ipv6((uint16_t*)&entry_tcp->xt_inp.in6p_laddr);
+				netstat.foreign_address=uint8_t_16_to_ipv6((uint16_t*)&entry_tcp->xt_inp.in6p_faddr);
 				netstat.local_port=uint16_t_to_port(entry_tcp->xt_inp.inp_lport);
 				netstat.foreign_port=uint16_t_to_port(entry_tcp->xt_inp.inp_fport);
 				netstat.state="ESTABLISHED";

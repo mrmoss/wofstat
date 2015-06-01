@@ -15,6 +15,9 @@
 #include <vector>
 #include <stdint.h>
 
+#include "netstat_util.hpp"
+#include "string_util.hpp"
+
 const size_t states_size=13;
 std::string states[states_size]=
 {
@@ -32,84 +35,6 @@ std::string states[states_size]=
 	"TIME_WAIT",
 	"CLOSE"
 };
-
-struct netstat_t
-{
-	std::string proto;
-	std::string local_address;
-	std::string foreign_address;
-	std::string local_port;
-	std::string foreign_port;
-	std::string state;
-	std::string inode;
-	std::string pid;
-};
-
-typedef std::vector<netstat_t> netstat_list_t;
-
-void netstat_print(const netstat_t& netstat)
-{
-	std::cout<<
-		std::setw(4)<<netstat.proto<<" "<<
-		std::setw(64)<<netstat.local_address+":"+netstat.local_port<<" "<<
-		std::setw(64)<<netstat.foreign_address+":"+netstat.foreign_port<<" "<<
-		std::setw(16)<<netstat.state<<" "<<
-		std::setw(8)<<netstat.pid<<" "<<
-		std::endl;
-}
-
-void netstat_list_print(const netstat_list_t& netstats)
-{
-	std::cout<<
-		std::setw(4)<<"proto "<<
-		std::setw(64)<<"local_address "<<
-		std::setw(64)<<"foreign_address "<<
-		std::setw(16)<<"state "<<
-		std::setw(8)<<"pid "<<
-		std::endl;
-
-	for(size_t ii=0;ii<netstats.size();++ii)
-		netstat_print(netstats[ii]);
-}
-
-std::string uint32_t_to_ipv4(const uint32_t address)
-{
-	std::ostringstream ostr;
-	ostr<<(uint32_t)((uint8_t*)&address)[0]<<"."<<
-		(uint32_t)((uint8_t*)&address)[1]<<"."<<
-		(uint32_t)((uint8_t*)&address)[2]<<"."<<
-		(uint32_t)((uint8_t*)&address)[3];
-	return ostr.str();
-}
-
-std::string uint8_t_16_to_ipv6(const uint8_t address[16])
-{
-	std::ostringstream ostr;
-	for(int ii=0;ii<16;ii+=2)
-	{
-		ostr<<std::hex<<std::setw(2)<<std::setfill('0')<<(unsigned int)(unsigned char)address[ii+0];
-		ostr<<std::hex<<std::setw(2)<<std::setfill('0')<<(unsigned int)(unsigned char)address[ii+1];
-
-		if(ii<14)
-			ostr<<":";
-	}
-
-	return ostr.str();
-}
-
-std::string dword_to_port(const DWORD port)
-{
-	std::ostringstream ostr;
-	ostr<<((((uint32_t)((uint8_t*)&port)[0])<<8)+((uint8_t*)&port)[1]);
-	return ostr.str();
-}
-
-std::string to_string(const uint32_t val)
-{
-	std::ostringstream ostr;
-	ostr<<val;
-	return ostr.str();
-}
 
 #if(defined(_WIN32_WINNT)&&_WIN32_WINNT>=_WIN32_WINNT_WS03)
 

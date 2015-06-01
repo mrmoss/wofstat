@@ -145,8 +145,8 @@ netstat_list_t netstat_bsd_parse(const std::string& proto)
 			{
 				netstat_t netstat;
 				netstat.proto=proto;
-				netstat.local_address=uint8_t_16_to_ipv6((uint16_t*)&entry_tcp->xt_inp.in6p_laddr);
-				netstat.foreign_address=uint8_t_16_to_ipv6((uint16_t*)&entry_tcp->xt_inp.in6p_faddr);
+				netstat.local_address=uint8_t_16_to_ipv6((uint8_t*)&entry_tcp->xt_inp.in6p_laddr);
+				netstat.foreign_address=uint8_t_16_to_ipv6((uint8_t*)&entry_tcp->xt_inp.in6p_faddr);
 				netstat.local_port=uint16_t_to_port(entry_tcp->xt_inp.inp_lport);
 				netstat.foreign_port=uint16_t_to_port(entry_tcp->xt_inp.inp_fport);
 				netstat.state="ESTABLISHED";

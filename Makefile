@@ -10,7 +10,7 @@ linux: $(SRC)/netstat_linux.cpp $(SRC)/netstat_util.cpp $(SRC)/string_util.cpp
 	$(CXX) $(CFLAGS) $^ -o $@
 
 windows: $(SRC)/netstat_windows.cpp $(SRC)/netstat_util.cpp $(SRC)/string_util.cpp
-	$(CXX) $(CFLAGS) $^ -o $@
+	$(CXX) $(CFLAGS) $^ -lIPHlpApi -lWs2_32 -o $@
 
 solaris: $(SRC)/netstat_solaris.cpp $(SRC)/netstat_util.cpp $(SRC)/string_util.cpp
 	$(CXX) $(CFLAGS) $^ -o $@

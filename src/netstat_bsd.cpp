@@ -1,3 +1,6 @@
+//Tested on:
+//	FreeBSD 9.2 (g++)
+//	FreeBSD 10.0 (g++)
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>

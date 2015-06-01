@@ -137,7 +137,11 @@ netstat_list_t netstat_bsd_parse(const std::string& proto)
 			netstat.foreign_address=uint32_t_to_ipv4(*(uint32_t*)&entry->xt_inp.inp_faddr);
 			netstat.local_port=uint16_t_to_port(entry->xt_inp.inp_lport);
 			netstat.foreign_port=uint16_t_to_port(entry->xt_inp.inp_fport);
-			netstat.state="UNKNOWN";
+			netstat.state="ESTABLISHED";
+
+				if(netstat.foreign_address=="0.0.0.0")
+					netstat.state="LISTEN";
+
 			netstat.pid="-";
 			netstats.push_back(netstat);
 		}
@@ -150,11 +154,7 @@ netstat_list_t netstat_bsd_parse(const std::string& proto)
 			netstat.foreign_address="0.0.0.0";
 			netstat.local_port=uint16_t_to_port(entry->xt_inp.inp_lport);
 			netstat.foreign_port="0";
-			netstat.state="ESTABLISHED";
-
-				if(netstat.foreign_address=="0.0.0.0")
-					netstat.state="LISTEN";
-
+			netstat.state="-";
 			netstat.pid="-";
 			netstats.push_back(netstat);
 		}

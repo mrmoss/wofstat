@@ -23,8 +23,6 @@
 #include <netinet/in_pcb.h>
 #include <netinet/tcp_var.h>
 
-#include <errno.h>
-
 #include "netstat_util.hpp"
 #include "string_util.hpp"
 

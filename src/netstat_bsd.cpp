@@ -34,13 +34,15 @@ std::string uint32_t_to_ipv4(const uint32_t address)
 	return ostr.str();
 }
 
-std::string uint8_t_16_to_ipv6(const uint8_t address[16])
+std::string in6_addr_to_ipv6(const in6_addr& address)
 {
+	uint8_t* addr=(uint8_t*)&address;
+
 	std::ostringstream ostr;
 	for(int ii=0;ii<16;ii+=2)
 	{
-		ostr<<std::hex<<std::setw(2)<<std::setfill('0')<<(unsigned int)(unsigned char)address[ii+0];
-		ostr<<std::hex<<std::setw(2)<<std::setfill('0')<<(unsigned int)(unsigned char)address[ii+1];
+		ostr<<std::hex<<std::setw(2)<<std::setfill('0')<<(unsigned int)(unsigned char)addr[ii+0];
+		ostr<<std::hex<<std::setw(2)<<std::setfill('0')<<(unsigned int)(unsigned char)addr[ii+1];
 
 		if(ii<14)
 			ostr<<":";
@@ -160,8 +162,8 @@ netstat_list_t netstat_bsd_parse(const std::string& proto)
 			{
 				netstat_t netstat;
 				netstat.proto=proto;
-				netstat.local_address=uint8_t_16_to_ipv6((uint8_t*)&entry->xt_inp.in6p_laddr);
-				netstat.foreign_address=uint8_t_16_to_ipv6((uint8_t*)&entry->xt_inp.in6p_faddr);
+				netstat.local_address=in6_addr_to_ipv6(entry->xt_inp.in6p_laddr);
+				netstat.foreign_address=in6_addr_to_ipv6(entry->xt_inp.in6p_faddr);
 				netstat.local_port=uint16_t_to_port(entry->xt_inp.inp_lport);
 				netstat.foreign_port=uint16_t_to_port(entry->xt_inp.inp_fport);
 				netstat.state="UNKNOWN";
@@ -173,7 +175,7 @@ netstat_list_t netstat_bsd_parse(const std::string& proto)
 			{
 				netstat_t netstat;
 				netstat.proto=proto;
-				netstat.local_address=uint8_t_16_to_ipv6((uint8_t*)&entry->xt_inp.in6p_laddr);
+				netstat.local_address=in6_addr_to_ipv6(entry->xt_inp.in6p_laddr);
 				netstat.foreign_address="0000:0000:0000:0000:0000:0000:0000:0000";
 				netstat.local_port=uint16_t_to_port(entry->xt_inp.inp_lport);
 				netstat.foreign_port="0";

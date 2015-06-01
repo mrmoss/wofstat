@@ -85,7 +85,7 @@ std::string uint8_t_16_to_ipv6(const uint8_t address[16])
         return ostr.str();
 }
 
-std::string uint32_t_to_port(const uint32_t port)
+std::string uint16_t_to_port(const uint16_t port)
 {
         std::ostringstream ostr;
         ostr<<((((uint32_t)((uint8_t*)&port)[0])<<8)+((uint8_t*)&port)[1]);
@@ -250,8 +250,8 @@ int main()
 					netstat.proto="tcp4";
 					netstat.local_address=uint32_t_to_ipv4(entry->tcpConnLocalAddress);
 					netstat.foreign_address=uint32_t_to_ipv4(entry->tcpConnRemAddress);
-					netstat.local_port=uint32_t_to_port(htons(entry->tcpConnLocalPort));
-					netstat.foreign_port=uint32_t_to_port(htons(entry->tcpConnRemPort));
+					netstat.local_port=uint16_t_to_port(htons(entry->tcpConnLocalPort));
+					netstat.foreign_port=uint16_t_to_port(htons(entry->tcpConnRemPort));
 					netstat.state=state_int_to_string(entry->tcpConnState);
 					netstat.pid="-";
 
@@ -274,8 +274,8 @@ int main()
 						netstat.proto="tcp6";
 						netstat.local_address=uint8_t_16_to_ipv6(entry->tcp6ConnLocalAddress.s6_addr);
 						netstat.foreign_address=uint8_t_16_to_ipv6(entry->tcp6ConnRemAddress.s6_addr);
-						netstat.local_port=uint32_t_to_port(htons(entry->tcp6ConnLocalPort));
-						netstat.foreign_port=uint32_t_to_port(htons(entry->tcp6ConnRemPort));
+						netstat.local_port=uint16_t_to_port(htons(entry->tcp6ConnLocalPort));
+						netstat.foreign_port=uint16_t_to_port(htons(entry->tcp6ConnRemPort));
 						netstat.state=state_int_to_string(entry->tcp6ConnState);
 						netstat.pid="-";
 
@@ -298,7 +298,7 @@ int main()
 					netstat.proto="udp4";
 					netstat.local_address=uint32_t_to_ipv4(entry->udpLocalAddress);
 					netstat.foreign_address="0.0.0.0";
-					netstat.local_port=uint32_t_to_port(htons(entry->udpLocalPort));
+					netstat.local_port=uint16_t_to_port(htons(entry->udpLocalPort));
 					netstat.foreign_port="0";
 					netstat.state="-";
 					netstat.pid="-";
@@ -322,7 +322,7 @@ int main()
 						netstat.proto="udp6";
 						netstat.local_address=uint8_t_16_to_ipv6(entry->udp6LocalAddress.s6_addr);
 						netstat.foreign_address="0000:0000:0000:0000:0000:0000:0000:0000";
-						netstat.local_port=uint32_t_to_port(htons(entry->udp6LocalPort));
+						netstat.local_port=uint16_t_to_port(htons(entry->udp6LocalPort));
 						netstat.foreign_port="0";
 						netstat.state="-";
 						netstat.pid="-";

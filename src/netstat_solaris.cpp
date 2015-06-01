@@ -170,7 +170,8 @@ netstat_list_t netstat()
 					netstat.pid="-";
 
 					#if(defined(SOLARIS_112))
-						netstat.pid=to_string(entry->tcpConnCreationProcess);
+						if(netstat.state!="TIME_WAIT")
+							netstat.pid=to_string(entry->tcpConnCreationProcess);
 					#endif
 
 					tcp4.push_back(netstat);
@@ -194,7 +195,8 @@ netstat_list_t netstat()
 						netstat.pid="-";
 
 						#if(defined(SOLARIS_112))
-							netstat.pid=to_string(entry->tcp6ConnCreationProcess);
+							if(netstat.state!="TIME_WAIT")
+								netstat.pid=to_string(entry->tcp6ConnCreationProcess);
 						#endif
 
 						tcp6.push_back(netstat);
@@ -218,7 +220,8 @@ netstat_list_t netstat()
 					netstat.pid="-";
 
 					#if(defined(SOLARIS_112))
-						netstat.pid=to_string(entry->udpCreationProcess);
+						if(netstat.state!="TIME_WAIT")
+							netstat.pid=to_string(entry->udpCreationProcess);
 					#endif
 
 					udp4.push_back(netstat);
@@ -242,7 +245,8 @@ netstat_list_t netstat()
 						netstat.pid="-";
 
 						#if(defined(SOLARIS_112))
-							netstat.pid=to_string(entry->udp6CreationProcess);
+							if(netstat.state!="TIME_WAIT")
+								netstat.pid=to_string(entry->udp6CreationProcess);
 						#endif
 
 						udp6.push_back(netstat);

@@ -89,6 +89,7 @@ static netstat_list_t netstat_windows_parse_tcp4()
 		netstat.foreign_address=uint32_t_to_ipv4(table->table[ii].dwRemoteAddr);
 		netstat.local_port=dword_to_port(table->table[ii].dwLocalPort);
 		netstat.foreign_port=dword_to_port(table->table[ii].dwRemotePort);
+		netstat.pid="-";
 
 		if(table->table[ii].dwState>=states_size)
 		{
@@ -104,10 +105,8 @@ static netstat_list_t netstat_windows_parse_tcp4()
 			netstat.foreign_port="0";
 		}
 
-		netstat.pid=to_string(table->table[ii].dwOwningPid);
-
-		if(netstat.pid=="0")
-			netstat.pid="-";
+		if(netstat.pid!="0"&&netstat.state!="TIME_WAIT")
+			netstat.pid=to_string(table->table[ii].dwOwningPid);
 
 		netstats.push_back(netstat);
 	}
@@ -166,7 +165,11 @@ static netstat_list_t netstat_windows_parse_udp4()
 		netstat.local_port=dword_to_port(table->table[ii].dwLocalPort);
 		netstat.foreign_port="0";
 		netstat.state="-";
-		netstat.pid=to_string(table->table[ii].dwOwningPid);
+		netstat.pid="-";
+
+		if(netstat.pid!="0"&&netstat.state!="TIME_WAIT")
+			netstat.pid=to_string(table->table[ii].dwOwningPid);
+
 		netstats.push_back(netstat);
 	}
 
@@ -260,6 +263,7 @@ static netstat_list_t netstat_windows_parse_tcp6()
 		netstat.foreign_address=uint8_t_16_to_ipv6(table->table[ii].ucRemoteAddr);
 		netstat.local_port=dword_to_port(table->table[ii].dwLocalPort);
 		netstat.foreign_port=dword_to_port(table->table[ii].dwRemotePort);
+		netstat.pid="-";
 
 		if(table->table[ii].dwState>=states_size)
 		{
@@ -275,7 +279,9 @@ static netstat_list_t netstat_windows_parse_tcp6()
 			netstat.foreign_port="0";
 		}
 
-		netstat.pid=to_string(table->table[ii].dwOwningPid);
+		if(netstat.pid!="0"&&netstat.state!="TIME_WAIT")
+			netstat.pid=to_string(table->table[ii].dwOwningPid);
+
 		netstats.push_back(netstat);
 	}
 
@@ -334,10 +340,10 @@ static netstat_list_t netstat_windows_parse_udp6()
 		netstat.local_port=dword_to_port(table->table[ii].dwLocalPort);
 		netstat.foreign_port="0";
 		netstat.state="-";
-		netstat.pid=to_string(table->table[ii].dwOwningPid);
+		netstat.pid="-";
 
-		if(netstat.pid=="0")
-			netstat.pid="-";
+		if(netstat.pid!="0"&&netstat.state!="TIME_WAIT")
+			netstat.pid=to_string(table->table[ii].dwOwningPid);
 
 		netstats.push_back(netstat);
 	}
@@ -419,6 +425,7 @@ static netstat_list_t netstat_windows_parse_tcp4()
 		netstat.local_port=dword_to_port(table->table[ii].dwLocalPort);
 		netstat.foreign_port=dword_to_port(table->table[ii].dwRemotePort);
 		netstat.state=states[table->table[ii].dwState];
+		netstat.pid="-";
 
 		if(table->table[ii].dwState==2)
 		{
@@ -426,7 +433,9 @@ static netstat_list_t netstat_windows_parse_tcp4()
 			netstat.foreign_port="0";
 		}
 
-		netstat.pid=to_string(table->table[ii].dwProcessId);
+		if(netstat.pid!="0"&&netstat.state!="TIME_WAIT")
+			netstat.pid=to_string(table->table[ii].dwProcessId);
+
 		netstats.push_back(netstat);
 	}
 
@@ -465,7 +474,10 @@ static netstat_list_t netstat_windows_parse_udp4()
 		netstat.local_port=dword_to_port(table->table[ii].dwLocalPort);
 		netstat.foreign_port="0";
 		netstat.state="-";
-		netstat.pid=to_string(table->table[ii].dwProcessId);
+
+		if(netstat.pid!="0"&&netstat.state!="TIME_WAIT")
+			netstat.pid=to_string(table->table[ii].dwProcessId);
+
 		netstats.push_back(netstat);
 	}
 

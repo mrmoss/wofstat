@@ -1,6 +1,7 @@
 //Tested on:
 //	FreeBSD 9.2 (g++)
 //	FreeBSD 10.0 (g++)
+
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
@@ -18,11 +19,6 @@
 #include <netinet/in.h>
 #include <netinet/in_pcb.h>
 
-#include <netinet/ip.h>
-#include <netinet/ip_var.h>
-
-#include <netinet/tcp.h>
-#include <netinet/tcp_fsm.h>
 #include <netinet/tcp_var.h>
 
 std::string uint32_t_to_ipv4(const uint32_t address)
@@ -130,16 +126,17 @@ netstat_list_t netstat_bsd_parse(const std::string& proto)
 
 	for(size_t ii=0;ii<len;)
 	{
-		xtcpcb* entry=(xtcpcb*)(buf+ii);
+		xtcpcb* entry_tcp=(xtcpcb*)(buf+ii);
+		xinpcb* entry_udp=(xinpcb*)(buf+ii);
 
-		if(proto=="tcp4"&&entry->xt_inp.inp_vflag&INP_IPV4)
+		if(proto=="tcp4"&&entry_tcp->xt_inp.inp_vflag&INP_IPV4)
 		{
 			netstat_t netstat;
 			netstat.proto=proto;
-			netstat.local_address=uint32_t_to_ipv4(*(uint32_t*)&entry->xt_inp.inp_laddr);
-			netstat.foreign_address=uint32_t_to_ipv4(*(uint32_t*)&entry->xt_inp.inp_faddr);
-			netstat.local_port=uint16_t_to_port(entry->xt_inp.inp_lport);
-			netstat.foreign_port=uint16_t_to_port(entry->xt_inp.inp_fport);
+			netstat.local_address=uint32_t_to_ipv4(*(uint32_t*)&entry_tcp->xt_inp.inp_laddr);
+			netstat.foreign_address=uint32_t_to_ipv4(*(uint32_t*)&entry_tcp->xt_inp.inp_faddr);
+			netstat.local_port=uint16_t_to_port(entry_tcp->xt_inp.inp_lport);
+			netstat.foreign_port=uint16_t_to_port(entry_tcp->xt_inp.inp_fport);
 			netstat.state="ESTABLISHED";
 
 				if(netstat.foreign_address=="0.0.0.0")
@@ -149,13 +146,13 @@ netstat_list_t netstat_bsd_parse(const std::string& proto)
 			netstats.push_back(netstat);
 		}
 
-		if(proto=="udp4"&&entry->xt_inp.inp_vflag&INP_IPV4)
+		if(proto=="udp4"&&entry_udp->xi_inp.inp_vflag&INP_IPV4)
 		{
 			netstat_t netstat;
 			netstat.proto=proto;
-			netstat.local_address=uint32_t_to_ipv4(*(uint32_t*)&entry->xt_inp.inp_laddr);
+			netstat.local_address=uint32_t_to_ipv4(*(uint32_t*)&entry_udp->xi_inp.inp_laddr);
 			netstat.foreign_address="0.0.0.0";
-			netstat.local_port=uint16_t_to_port(entry->xt_inp.inp_lport);
+			netstat.local_port=uint16_t_to_port(entry_udp->xi_inp.inp_lport);
 			netstat.foreign_port="0";
 			netstat.state="-";
 			netstat.pid="-";
@@ -163,14 +160,14 @@ netstat_list_t netstat_bsd_parse(const std::string& proto)
 		}
 
 		#if(defined(AF_INET6))
-			if(proto=="tcp6"&&entry->xt_inp.inp_vflag&INP_IPV6)
+			if(proto=="tcp6"&&entry_tcp->xt_inp.inp_vflag&INP_IPV6)
 			{
 				netstat_t netstat;
 				netstat.proto=proto;
-				netstat.local_address=in6_addr_to_ipv6(entry->xt_inp.in6p_laddr);
-				netstat.foreign_address=in6_addr_to_ipv6(entry->xt_inp.in6p_faddr);
-				netstat.local_port=uint16_t_to_port(entry->xt_inp.inp_lport);
-				netstat.foreign_port=uint16_t_to_port(entry->xt_inp.inp_fport);
+				netstat.local_address=in6_addr_to_ipv6(entry_tcp->xt_inp.in6p_laddr);
+				netstat.foreign_address=in6_addr_to_ipv6(entry_tcp->xt_inp.in6p_faddr);
+				netstat.local_port=uint16_t_to_port(entry_tcp->xt_inp.inp_lport);
+				netstat.foreign_port=uint16_t_to_port(entry_tcp->xt_inp.inp_fport);
 				netstat.state="ESTABLISHED";
 
 				if(netstat.foreign_address=="0000:0000:0000:0000:0000:0000:0000:0000")
@@ -180,13 +177,13 @@ netstat_list_t netstat_bsd_parse(const std::string& proto)
 				netstats.push_back(netstat);
 			}
 
-			if(proto=="udp6"&&entry->xt_inp.inp_vflag&INP_IPV6)
+			if(proto=="udp6"&&entry_udp->xi_inp.inp_vflag&INP_IPV6)
 			{
 				netstat_t netstat;
 				netstat.proto=proto;
-				netstat.local_address=in6_addr_to_ipv6(entry->xt_inp.in6p_laddr);
+				netstat.local_address=in6_addr_to_ipv6(entry_udp->xi_inp.in6p_laddr);
 				netstat.foreign_address="0000:0000:0000:0000:0000:0000:0000:0000";
-				netstat.local_port=uint16_t_to_port(entry->xt_inp.inp_lport);
+				netstat.local_port=uint16_t_to_port(entry_udp->xi_inp.inp_lport);
 				netstat.foreign_port="0";
 				netstat.state="-";
 				netstat.pid="-";

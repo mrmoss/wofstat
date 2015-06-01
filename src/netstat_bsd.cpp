@@ -101,6 +101,9 @@ static netstat_list_t netstat_bsd_parse(const std::string& proto)
 				}
 			}
 
+			if(netstat.pid=="-")
+				netstat.state="TIME_WAIT";
+
 			netstats.push_back(netstat);
 		}
 
@@ -155,6 +158,9 @@ static netstat_list_t netstat_bsd_parse(const std::string& proto)
 						break;
 					}
 				}
+
+				if(netstat.pid=="-")
+					netstat.state="TIME_WAIT";
 
 				netstats.push_back(netstat);
 			}

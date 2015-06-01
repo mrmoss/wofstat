@@ -11,6 +11,7 @@
 #include <sstream>
 #include <vector>
 
+#include <sys/file.h>
 #include <sys/types.h>
 #include <sys/sysctl.h>
 #include <sys/socket.h>
@@ -19,6 +20,8 @@
 #include <netinet/in.h>
 #include <netinet/in_pcb.h>
 #include <netinet/tcp_var.h>
+
+#include <errno.h>
 
 std::string uint32_t_to_ipv4(const uint32_t address)
 {
@@ -54,6 +57,13 @@ std::string uint16_t_to_port(const uint16_t port)
 	return ostr.str();
 }
 
+std::string to_string(const uint32_t val)
+{
+	std::ostringstream ostr;
+	ostr<<val;
+	return ostr.str();
+}
+
 struct netstat_t
 {
 	std::string proto;
@@ -67,6 +77,7 @@ struct netstat_t
 };
 
 typedef std::vector<netstat_t> netstat_list_t;
+typedef std::vector<xfile*> xfilep_list_t;
 
 void netstat_print(const netstat_t& netstat)
 {
@@ -95,6 +106,19 @@ void netstat_list_print(const netstat_list_t& netstats)
 
 netstat_list_t netstat_bsd_parse(const std::string& proto)
 {
+	size_t xflen=0;
+
+	if(sysctlbyname("kern.file",NULL,&xflen,NULL,0)==-1)
+		throw std::runtime_error("error getting data size.");
+
+	char* xfbuf=(char*)malloc(xflen);
+
+	if(sysctlbyname("kern.file",xfbuf,&xflen,NULL,0)==-1)
+	{
+		free(xfbuf);
+		throw std::runtime_error("error getting data.");
+	}
+
 	netstat_list_t netstats;
 
 	size_t len=0;
@@ -113,15 +137,25 @@ netstat_list_t netstat_bsd_parse(const std::string& proto)
 	#endif
 
 	if(sysctl_path=="")
+	{
+		free(xfbuf);
 		throw std::runtime_error("Invalid protocol.");
+	}
 
 	if(sysctlbyname(sysctl_path.c_str(),NULL,&len,NULL,0)==-1)
+	{
+		free(xfbuf);
 		throw std::runtime_error("error getting data size.");
+	}
 
 	char* buf=(char*)malloc(len);
 
 	if(sysctlbyname(sysctl_path.c_str(),buf,&len,NULL,0)==-1)
+	{
+		free(xfbuf);
+		free(buf);
 		throw std::runtime_error("error getting data.");
+	}
 
 	for(size_t ii=0;ii<len;)
 	{
@@ -138,10 +172,22 @@ netstat_list_t netstat_bsd_parse(const std::string& proto)
 			netstat.foreign_port=uint16_t_to_port(entry_tcp->xt_inp.inp_fport);
 			netstat.state="ESTABLISHED";
 
-				if(netstat.foreign_address=="0.0.0.0")
-					netstat.state="LISTEN";
+			if(netstat.foreign_address=="0.0.0.0")
+				netstat.state="LISTEN";
 
 			netstat.pid="-";
+
+			for(size_t ii=0;ii<xflen;ii+=sizeof(xfile))
+			{
+				xfile* xf=(xfile*)(xfbuf+ii);
+
+				if((void*)entry_tcp->xt_socket.xso_so==xf->xf_data)
+				{
+					netstat.pid=to_string(xf->xf_pid);
+					break;
+				}
+			}
+
 			netstats.push_back(netstat);
 		}
 
@@ -155,6 +201,18 @@ netstat_list_t netstat_bsd_parse(const std::string& proto)
 			netstat.foreign_port="0";
 			netstat.state="-";
 			netstat.pid="-";
+
+			for(size_t ii=0;ii<xflen;ii+=sizeof(xfile))
+			{
+				xfile* xf=(xfile*)(xfbuf+ii);
+
+				if((void*)entry_udp->xi_socket.xso_so==xf->xf_data)
+				{
+					netstat.pid=to_string(xf->xf_pid);
+					break;
+				}
+			}
+
 			netstats.push_back(netstat);
 		}
 
@@ -173,6 +231,18 @@ netstat_list_t netstat_bsd_parse(const std::string& proto)
 					netstat.state="LISTEN";
 
 				netstat.pid="-";
+
+				for(size_t ii=0;ii<xflen;ii+=sizeof(xfile))
+				{
+					xfile* xf=(xfile*)(xfbuf+ii);
+
+					if((void*)entry_tcp->xt_socket.xso_so==xf->xf_data)
+					{
+						netstat.pid=to_string(xf->xf_pid);
+						break;
+					}
+				}
+
 				netstats.push_back(netstat);
 			}
 
@@ -186,6 +256,18 @@ netstat_list_t netstat_bsd_parse(const std::string& proto)
 				netstat.foreign_port="0";
 				netstat.state="-";
 				netstat.pid="-";
+
+				for(size_t ii=0;ii<xflen;ii+=sizeof(xfile))
+				{
+					xfile* xf=(xfile*)(xfbuf+ii);
+
+					if((void*)entry_udp->xi_socket.xso_so==xf->xf_data)
+					{
+						netstat.pid=to_string(xf->xf_pid);
+						break;
+					}
+				}
+
 				netstats.push_back(netstat);
 			}
 		#endif
@@ -193,6 +275,7 @@ netstat_list_t netstat_bsd_parse(const std::string& proto)
 		ii+=((xinpgen*)(buf+ii))->xig_len;
 	}
 
+	free(xfbuf);
 	free(buf);
 	return netstats;
 }

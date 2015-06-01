@@ -174,7 +174,7 @@ netstat_list_t netstat_bsd_parse(const std::string& proto)
 			{
 				netstat_t netstat;
 				netstat.proto=proto;
-				netstat.local_address=in6_addr_to_ipv6(entry_udp->xi_inp.in6p_laddr);
+				netstat.local_address=uint8_t_16_to_ipv6((uint8_t*)&entry_udp->xi_inp.in6p_laddr);
 				netstat.foreign_address="0000:0000:0000:0000:0000:0000:0000:0000";
 				netstat.local_port=uint16_t_to_port(entry_udp->xi_inp.inp_lport);
 				netstat.foreign_port="0";

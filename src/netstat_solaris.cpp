@@ -4,11 +4,12 @@
 
 #include "netstat.hpp"
 
+#include <cstdlib>
+#include <stdexcept>
 #include <iomanip>
 #include <iostream>
-#include <stdint.h>
-#include <cstdlib>
 #include <string>
+#include <stdint.h>
 #include <sstream>
 #include <vector>
 

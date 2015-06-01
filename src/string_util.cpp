@@ -18,7 +18,7 @@ std::string uint32_t_to_ipv4(const uint32_t address)
 
 std::string hex_to_ipv4(const std::string& hex)
 {
-	if(!hex.size()==4||!is_hex(hex))
+	if(hex.size()!=4||!is_hex(hex))
 		throw std::runtime_error("hex_to_ipv4 - Invalid hex value \""+hex+"\".");
 
 	std::ostringstream ostr;
@@ -32,7 +32,7 @@ std::string hex_to_ipv4(const std::string& hex)
 
 std::string hex_to_ipv6(const std::string& hex)
 {
-	if(!hex.size()==4||!is_hex(hex))
+	if(hex.size()!=4||!is_hex(hex))
 		throw std::runtime_error("hex_to_ipv4 - Invalid hex value \""+hex+"\".");
 
 	std::string lower_hex=to_lower(hex);
@@ -73,7 +73,7 @@ std::string uint16_t_to_port(const uint16_t port)
 
 std::string hex_to_port(const std::string& hex)
 {
-	if(!hex.size()==4||!is_hex(hex))
+	if(hex.size()!=4||!is_hex(hex))
 		throw std::runtime_error("hex_to_port - Invalid hex value \""+hex+"\".");
 
 	std::ostringstream ostr;

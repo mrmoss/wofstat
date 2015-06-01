@@ -62,41 +62,41 @@ struct reply_t
 
 std::string uint32_t_to_ipv4(const uint32_t address)
 {
-        std::ostringstream ostr;
-        ostr<<(uint32_t)((uint8_t*)&address)[0]<<"."<<
-                (uint32_t)((uint8_t*)&address)[1]<<"."<<
-                (uint32_t)((uint8_t*)&address)[2]<<"."<<
-                (uint32_t)((uint8_t*)&address)[3];
-        return ostr.str();
+	std::ostringstream ostr;
+	ostr<<(uint32_t)((uint8_t*)&address)[0]<<"."<<
+		(uint32_t)((uint8_t*)&address)[1]<<"."<<
+		(uint32_t)((uint8_t*)&address)[2]<<"."<<
+		(uint32_t)((uint8_t*)&address)[3];
+	return ostr.str();
 }
 
 std::string uint8_t_16_to_ipv6(const uint8_t address[16])
 {
-        std::ostringstream ostr;
-        for(int ii=0;ii<16;ii+=2)
-        {
-                ostr<<std::hex<<std::setw(2)<<std::setfill('0')<<(unsigned int)(unsigned char)address[ii+0];
-                ostr<<std::hex<<std::setw(2)<<std::setfill('0')<<(unsigned int)(unsigned char)address[ii+1];
+	std::ostringstream ostr;
+	for(int ii=0;ii<16;ii+=2)
+	{
+		ostr<<std::hex<<std::setw(2)<<std::setfill('0')<<(unsigned int)(unsigned char)address[ii+0];
+		ostr<<std::hex<<std::setw(2)<<std::setfill('0')<<(unsigned int)(unsigned char)address[ii+1];
 
-                if(ii<14)
-                        ostr<<":";
-        }
+		if(ii<14)
+			ostr<<":";
+	}
 
-        return ostr.str();
+	return ostr.str();
 }
 
 std::string uint16_t_to_port(const uint16_t port)
 {
-        std::ostringstream ostr;
-        ostr<<((((uint32_t)((uint8_t*)&port)[0])<<8)+((uint8_t*)&port)[1]);
-        return ostr.str();
+	std::ostringstream ostr;
+	ostr<<((((uint32_t)((uint8_t*)&port)[0])<<8)+((uint8_t*)&port)[1]);
+	return ostr.str();
 }
 
 std::string to_string(const uint32_t val)
 {
-        std::ostringstream ostr;
-        ostr<<val;
-        return ostr.str();
+	std::ostringstream ostr;
+	ostr<<val;
+	return ostr.str();
 }
 
 std::string state_int_to_string(const uint32_t state)
@@ -129,14 +129,14 @@ std::string state_int_to_string(const uint32_t state)
 
 struct netstat_t
 {
-        std::string proto;
-        std::string local_address;
-        std::string foreign_address;
-        std::string local_port;
-        std::string foreign_port;
-        std::string state;
-        std::string inode;
-        std::string pid;
+	std::string proto;
+	std::string local_address;
+	std::string foreign_address;
+	std::string local_port;
+	std::string foreign_port;
+	std::string state;
+	std::string inode;
+	std::string pid;
 };
 
 typedef std::vector<netstat_t> netstat_list_t;

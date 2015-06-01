@@ -22,8 +22,6 @@
 #include <netinet/tcp_fsm.h>
 #include <netinet/tcp_var.h>
 
-//pcblist
-
 std::string uint32_t_to_ipv4(const uint32_t address)
 {
 	std::ostringstream ostr;
@@ -152,7 +150,11 @@ netstat_list_t netstat_bsd_parse(const std::string& proto)
 			netstat.foreign_address="0.0.0.0";
 			netstat.local_port=uint16_t_to_port(entry->xt_inp.inp_lport);
 			netstat.foreign_port="0";
-			netstat.state="UNKNOWN";
+			netstat.state="ESTABLISHED";
+
+				if(netstat.foreign_address=="0.0.0.0")
+					netstat.state="LISTEN";
+
 			netstat.pid="-";
 			netstats.push_back(netstat);
 		}
@@ -166,7 +168,11 @@ netstat_list_t netstat_bsd_parse(const std::string& proto)
 				netstat.foreign_address=in6_addr_to_ipv6(entry->xt_inp.in6p_faddr);
 				netstat.local_port=uint16_t_to_port(entry->xt_inp.inp_lport);
 				netstat.foreign_port=uint16_t_to_port(entry->xt_inp.inp_fport);
-				netstat.state="UNKNOWN";
+				netstat.state="ESTABLISHED";
+
+				if(netstat.foreign_address=="0000:0000:0000:0000:0000:0000:0000:0000")
+					netstat.state="LISTEN";
+
 				netstat.pid="-";
 				netstats.push_back(netstat);
 			}
@@ -179,7 +185,7 @@ netstat_list_t netstat_bsd_parse(const std::string& proto)
 				netstat.foreign_address="0000:0000:0000:0000:0000:0000:0000:0000";
 				netstat.local_port=uint16_t_to_port(entry->xt_inp.inp_lport);
 				netstat.foreign_port="0";
-				netstat.state="UNKNOWN";
+				netstat.state="-";
 				netstat.pid="-";
 				netstats.push_back(netstat);
 			}

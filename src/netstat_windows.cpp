@@ -5,6 +5,8 @@
 //	Windows 7 (VS2013, MinGW FAILS DUE TO HEADER DECLARATION CHANGES)
 //	Windows 8.1 (VS2013, MinGW FAILS DUE TO HEADER DECLARATION CHANGES)
 
+#include "netstat.hpp"
+
 #include <winsock2.h>
 #include <IPHlpApi.h>
 
@@ -18,8 +20,8 @@
 #include "netstat_util.hpp"
 #include "string_util.hpp"
 
-const size_t states_size=13;
-std::string states[states_size]=
+static const size_t states_size=13;
+static std::string states[states_size]=
 {
 	"UNKNOWN",
 	"CLOSE",
@@ -38,7 +40,7 @@ std::string states[states_size]=
 
 #if(defined(_WIN32_WINNT)&&_WIN32_WINNT>=_WIN32_WINNT_WS03)
 
-netstat_list_t netstat_windows_parse_tcp4()
+static netstat_list_t netstat_windows_parse_tcp4()
 {
 	netstat_list_t netstats;
 	MIB_TCPTABLE_OWNER_PID* table=(MIB_TCPTABLE_OWNER_PID*)malloc(sizeof(MIB_TCPTABLE_OWNER_PID));
@@ -110,7 +112,7 @@ netstat_list_t netstat_windows_parse_tcp4()
 	return netstats;
 }
 
-netstat_list_t netstat_windows_parse_udp4()
+static netstat_list_t netstat_windows_parse_udp4()
 {
 	netstat_list_t netstats;
 	MIB_UDPTABLE_OWNER_PID* table=(MIB_UDPTABLE_OWNER_PID*)malloc(sizeof(MIB_UDPTABLE_OWNER_PID));
@@ -205,7 +207,7 @@ netstat_list_t netstat_windows_parse_udp4()
 
 #endif
 
-netstat_list_t netstat_windows_parse_tcp6()
+static netstat_list_t netstat_windows_parse_tcp6()
 {
 	netstat_list_t netstats;
 	MIB_TCP6TABLE_OWNER_PID* table=(MIB_TCP6TABLE_OWNER_PID*)malloc(sizeof(MIB_TCP6TABLE_OWNER_PID));
@@ -278,7 +280,7 @@ netstat_list_t netstat_windows_parse_tcp6()
 	return netstats;
 }
 
-netstat_list_t netstat_windows_parse_udp6()
+static netstat_list_t netstat_windows_parse_udp6()
 {
 	netstat_list_t netstats;
 	MIB_UDP6TABLE_OWNER_PID* table=(MIB_UDP6TABLE_OWNER_PID*)malloc(sizeof(MIB_UDP6TABLE_OWNER_PID));
@@ -372,7 +374,7 @@ struct MIB_UDPTABLE_EX
 typedef DWORD (WINAPI* PROCALLOCATEANDGETTCPEXTABLEFROMSTACK)(MIB_TCPTABLE_EX**,BOOL,HANDLE,DWORD,DWORD);
 typedef DWORD (WINAPI* PROCALLOCATEANDGETUDPEXTABLEFROMSTACK)(MIB_UDPTABLE_EX**,BOOL,HANDLE,DWORD,DWORD);
 
-netstat_list_t netstat_windows_parse_tcp4()
+static netstat_list_t netstat_windows_parse_tcp4()
 {
 	HMODULE hModule=LoadLibrary("iphlpapi.dll");
 
@@ -424,7 +426,7 @@ netstat_list_t netstat_windows_parse_tcp4()
 	return netstats;
 }
 
-netstat_list_t netstat_windows_parse_udp4()
+static netstat_list_t netstat_windows_parse_udp4()
 {
 	HMODULE hModule=LoadLibrary("iphlpapi.dll");
 

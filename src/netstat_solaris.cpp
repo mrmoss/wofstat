@@ -2,6 +2,8 @@
 //	solaris 10 (g++)
 //	solaris 11 (g++)
 
+#include "netstat.hpp"
+
 #include <iomanip>
 #include <iostream>
 #include <stdint.h>
@@ -63,7 +65,7 @@ struct reply_t
 	opthdr opt_header;
 };
 
-std::string state_int_to_string(const uint32_t state)
+static std::string state_int_to_string(const uint32_t state)
 {
 	if(state==MIB2_TCP_established)
 		return "ESTABLISHED";

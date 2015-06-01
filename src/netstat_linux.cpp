@@ -7,6 +7,8 @@
 //	openSUSE 13.1 (g++)
 //	CentOS 5.7 (g++)
 
+#include "netstat.hpp"
+
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
@@ -29,8 +31,8 @@
 #include "netstat_util.hpp"
 #include "string_util.hpp"
 
-const size_t states_size=14;
-const std::string states[states_size]=
+static const size_t states_size=14;
+static const std::string states[states_size]=
 {
 	"UNKNOWN",
 	"ESTABLISHED",
@@ -48,7 +50,7 @@ const std::string states[states_size]=
 	"MAX_STATES"
 };
 
-list_t list_directories(const std::string& path)
+static list_t list_directories(const std::string& path)
 {
 	list_t directories;
 	DIR* dp=opendir(path.c_str());
@@ -71,7 +73,7 @@ list_t list_directories(const std::string& path)
 	return directories;
 }
 
-list_t list_files(const std::string& path)
+static list_t list_files(const std::string& path)
 {
 	list_t files;
 	DIR* dp=opendir(path.c_str());
@@ -95,7 +97,7 @@ list_t list_files(const std::string& path)
 	return files;
 }
 
-std::string readlink(const std::string& path)
+static std::string readlink(const std::string& path)
 {
 	char buffer[15];
 	ssize_t size=readlink(path.c_str(),buffer,15);
@@ -111,7 +113,7 @@ std::string readlink(const std::string& path)
 	return ret;
 }
 
-std::string hex_to_state(const std::string& hex)
+static std::string hex_to_state(const std::string& hex)
 {
 	unsigned int state=hex_to_decimal(hex);
 
@@ -121,7 +123,7 @@ std::string hex_to_state(const std::string& hex)
 	return states[state];
 }
 
-netstat_list_t netstat_linux_parse(const std::string& proto,const std::string& data,const lookup_list_t& pid_lookups)
+static netstat_list_t netstat_linux_parse(const std::string& proto,const std::string& data,const lookup_list_t& pid_lookups)
 {
 	table_t table;
 	list_t lines=string_to_lines(data);

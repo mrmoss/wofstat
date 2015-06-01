@@ -2,6 +2,8 @@
 //	FreeBSD 9.2 (g++)
 //	FreeBSD 10.0 (g++)
 
+#include "netstat.hpp"
+
 #include <cstdlib>
 #include <stdexcept>
 #include <iomanip>
@@ -28,7 +30,7 @@
 
 typedef std::vector<xfile*> xfilep_list_t;
 
-netstat_list_t netstat_bsd_parse(const std::string& proto)
+static netstat_list_t netstat_bsd_parse(const std::string& proto)
 {
 	size_t xflen=0;
 

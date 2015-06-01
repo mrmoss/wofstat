@@ -105,6 +105,10 @@ static netstat_list_t netstat_windows_parse_tcp4()
 		}
 
 		netstat.pid=to_string(table->table[ii].dwOwningPid);
+
+		if(netstat.pid=="0")
+			netstat.pid="-";
+
 		netstats.push_back(netstat);
 	}
 
@@ -331,6 +335,10 @@ static netstat_list_t netstat_windows_parse_udp6()
 		netstat.foreign_port="0";
 		netstat.state="-";
 		netstat.pid=to_string(table->table[ii].dwOwningPid);
+
+		if(netstat.pid=="0")
+			netstat.pid="-";
+
 		netstats.push_back(netstat);
 	}
 

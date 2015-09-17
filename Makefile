@@ -1,6 +1,6 @@
 CXX=g++
 OPTS=-O
-CFLAGS=$(OPTS) -Wall
+CFLAGS=$(OPTS) -Wall -static-libgcc -static-libstdc++ -Wl,--as-needed -static -s
 SRC=src
 
 all:

@@ -1,10 +1,10 @@
 CXX=g++
 OPTS=-O
-CFLAGS=$(OPTS) -Wall -static -static-libgcc -static-libstdc++ -Wl,--as-needed
+CFLAGS=$(OPTS) -Wall
 SRC=src
 
 all:
-	- echo "Specify an OS:\n  make linux\n  make solaris\n  make solaris_112\n  make bsd"
+	- echo "Specify an OS:\n  make linux\n  make solaris\n  make solaris_112\n  make bsd\n  make osx"
 
 linux: $(SRC)/main.cpp $(SRC)/netstat_linux.cpp $(SRC)/netstat_util.cpp $(SRC)/string_util.cpp
 	$(CXX) $(CFLAGS) $^ -o $@
@@ -21,5 +21,8 @@ solaris_112: $(SRC)/main.cpp $(SRC)/netstat_solaris.cpp $(SRC)/netstat_util.cpp 
 bsd: $(SRC)/main.cpp $(SRC)/netstat_bsd.cpp $(SRC)/netstat_util.cpp $(SRC)/string_util.cpp
 	$(CXX) $(CFLAGS) $^ -o $@
 
+osx: $(SRC)/main.cpp $(SRC)/netstat_osx.cpp $(SRC)/netstat_util.cpp $(SRC)/string_util.cpp
+	$(CXX) $(CFLAGS) $^ -o $@
+
 clean:
-	- rm -f linux windows solaris solaris_112 bsd
+	- rm -f linux windows solaris solaris_112 bsd osx

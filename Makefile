@@ -13,7 +13,7 @@ linux: $(SRC)/main.cpp $(SRC)/netstat_linux.cpp $(SRC)/netstat_util.cpp $(SRC)/s
 #	$(CXX) $(CFLAGS) $^ -lIPHlpApi -lWs2_32 -o $@
 
 solaris: $(SRC)/main.cpp $(SRC)/netstat_solaris.cpp $(SRC)/netstat_util.cpp $(SRC)/string_util.cpp
-	$(CXX) $(CFLAGS) $^ -lkvm -lelf -lnsl -lsocket -m64 -o $@
+	$(CXX) $(CFLAGS) $^ -o $@
 
 bsd: $(SRC)/main.cpp $(SRC)/netstat_bsd.cpp $(SRC)/netstat_util.cpp $(SRC)/string_util.cpp
 	$(CXX) $(CFLAGS) $^ -o $@

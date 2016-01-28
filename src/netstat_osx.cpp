@@ -95,6 +95,7 @@ netstat_list_t netstat()
 				{
 						netstat_t netstat;
 
+						netstat.state="-";
 						netstat.pid=std::to_string(procs[ii].kp_proc.p_pid);
 						if(si.psi.soi_type==SOCK_STREAM)
 						{

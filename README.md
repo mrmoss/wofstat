@@ -1,11 +1,11 @@
 Thesis
-Currently yields a uniform network connection output for Linux, Windows, BSD, and Solaris.
+Currently yields a uniform network connection output for Linux, Windows, BSD, and Solaris (11+).
 
 Requires C++ compiler.
 
 Building:
 
-	make linux|solaris|solaris_112|bsd
+	make linux|solaris|bsd|osx
 
 For Windows:
 

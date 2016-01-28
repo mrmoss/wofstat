@@ -4,7 +4,7 @@ CFLAGS=$(OPTS) -Wall
 SRC=src
 
 all:
-	- echo "Specify an OS:\n  make linux\n  make solaris\n  make solaris_112\n  make bsd\n  make osx"
+	- echo "Specify an OS:\n  make linux\n  make solaris\n  make bsd\n  make osx"
 
 linux: $(SRC)/main.cpp $(SRC)/netstat_linux.cpp $(SRC)/netstat_util.cpp $(SRC)/string_util.cpp
 	$(CXX) $(CFLAGS) $^ -o $@
@@ -22,4 +22,4 @@ osx: $(SRC)/main.cpp $(SRC)/netstat_osx.cpp $(SRC)/netstat_util.cpp $(SRC)/strin
 	$(CXX) $(CFLAGS) $^ -o $@
 
 clean:
-	- rm -f linux windows solaris solaris_112 bsd osx
+	- rm -f linux windows solaris bsd osx

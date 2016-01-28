@@ -12,7 +12,7 @@
 #include "netstat_util.hpp"
 #include "string_util.hpp"
 
-static const size_t states_size=14;
+static const size_t states_size=12;
 static const std::string states[states_size]=
 {
 	"CLOSED",

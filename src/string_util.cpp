@@ -119,10 +119,10 @@ std::string replace_all(std::string str,const std::string& find,const std::strin
 	return str;
 }
 
-list_t string_to_lines(const std::string& str)
+notepad_t string_to_lines(const std::string& str)
 {
 	std::istringstream istr(str.c_str());
-	list_t lines;
+	notepad_t lines;
 	std::string line;
 
 	while(std::getline(istr,line))
@@ -131,10 +131,10 @@ list_t string_to_lines(const std::string& str)
 	return lines;
 }
 
-list_t read_line_columns(const std::string& line)
+notepad_t read_line_columns(const std::string& line)
 {
 	std::istringstream istr(line);
-	list_t columns;
+	notepad_t columns;
 	std::string column;
 
 	while(istr>>column)

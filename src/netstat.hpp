@@ -1,6 +1,7 @@
 #ifndef NETSTAT_HPP
 #define NETSTAT_HPP
 
+#include <stdint.h>
 #include <string>
 #include <vector>
 

@@ -64,25 +64,21 @@ std::string uint8_t_16_to_ipv6(const uint8_t address[16])
 	return ostr.str();
 }
 
-std::string uint16_t_to_port(const uint16_t port)
+uint16_t uint16_t_to_port(const uint16_t port)
 {
-	std::ostringstream ostr;
-	ostr<<((((uint32_t)((uint8_t*)&port)[0])<<8)+((uint8_t*)&port)[1]);
-	return ostr.str();
+	return ((((uint32_t)((uint8_t*)&port)[0])<<8)+((uint8_t*)&port)[1]);
 }
 
-std::string hex_to_port(const std::string& hex)
+uint16_t hex_to_port(const std::string& hex)
 {
 	if(hex.size()!=4||!is_hex(hex))
 		throw std::runtime_error("hex_to_port - Invalid hex value \""+hex+"\".");
 
-	std::ostringstream ostr;
-	ostr<<(hex_to_decimal(hex.substr(0,2))<<8)+hex_to_decimal(hex.substr(2,2));
-	return ostr.str();
+	return (hex_to_decimal(hex.substr(0,2))<<8)+hex_to_decimal(hex.substr(2,2));
 }
 
 #if(defined(_WIN32)&&!defined(__CYGWIN__))
-	std::string dword_to_port(const DWORD port)
+	uint16_t dword_to_port(const DWORD port)
 	{
 		return uint16_t_to_port((uint16_t)port);
 	}

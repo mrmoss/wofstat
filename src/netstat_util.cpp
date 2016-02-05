@@ -2,13 +2,20 @@
 
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 
 void netstat_print(const netstat_t& netstat)
 {
+	std::ostringstream lstr;
+	lstr<<netstat.local_address+":"<<netstat.local_port;
+
+	std::ostringstream rstr;
+	rstr<<netstat.foreign_address+":"<<netstat.foreign_port;
+
 	std::cout<<
 		std::setw(4)<<netstat.proto<<" "<<
-		std::setw(64)<<netstat.local_address+":"+netstat.local_port<<" "<<
-		std::setw(64)<<netstat.foreign_address+":"+netstat.foreign_port<<" "<<
+		std::setw(46)<<lstr.str()<<" "<<
+		std::setw(46)<<rstr.str()<<" "<<
 		std::setw(16)<<netstat.state<<" "<<
 		std::setw(8)<<netstat.pid<<" "<<
 		std::endl;
@@ -18,8 +25,8 @@ void netstat_list_print(const netstat_list_t& netstats)
 {
 	std::cout<<
 		std::setw(4)<<"proto "<<
-		std::setw(64)<<"local_address "<<
-		std::setw(64)<<"foreign_address "<<
+		std::setw(46)<<"local_address "<<
+		std::setw(46)<<"foreign_address "<<
 		std::setw(16)<<"state "<<
 		std::setw(8)<<"pid "<<
 		std::endl;

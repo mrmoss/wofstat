@@ -77,7 +77,7 @@ uint16_t hex_to_port(const std::string& hex)
 	return (hex_to_decimal(hex.substr(0,2))<<8)+hex_to_decimal(hex.substr(2,2));
 }
 
-#if(defined(_WIN32)&&!defined(__CYGWIN__))
+#if(defined(_WIN32)||defined(__CYGWIN__))
 	uint16_t dword_to_port(const DWORD port)
 	{
 		return uint16_t_to_port((uint16_t)port);

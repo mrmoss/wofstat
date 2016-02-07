@@ -39,7 +39,6 @@ static std::string states[states_size]=
 };
 
 #if(defined(_WIN32_WINNT)&&_WIN32_WINNT>=_WIN32_WINNT_WS03)
-
 static netstat_list_t netstat_windows_parse_tcp4()
 {
 	netstat_list_t netstats;
@@ -102,7 +101,7 @@ static netstat_list_t netstat_windows_parse_tcp4()
 		if(table->table[ii].dwState==2)
 		{
 			netstat.foreign_address="0.0.0.0";
-			netstat.foreign_port="0";
+			netstat.foreign_port=0;
 		}
 
 		if(netstat.pid!="0"&&netstat.state!="TIME_WAIT")
@@ -163,7 +162,7 @@ static netstat_list_t netstat_windows_parse_udp4()
 		netstat.local_address=uint32_t_to_ipv4(table->table[ii].dwLocalAddr);
 		netstat.foreign_address="0.0.0.0";
 		netstat.local_port=dword_to_port(table->table[ii].dwLocalPort);
-		netstat.foreign_port="0";
+		netstat.foreign_port=0;
 		netstat.state="-";
 		netstat.pid="-";
 
@@ -276,7 +275,7 @@ static netstat_list_t netstat_windows_parse_tcp6()
 		if(table->table[ii].dwState==2)
 		{
 			netstat.foreign_address="0000:0000:0000:0000:0000:0000:0000:0000";
-			netstat.foreign_port="0";
+			netstat.foreign_port=0;
 		}
 
 		if(netstat.pid!="0"&&netstat.state!="TIME_WAIT")
@@ -338,7 +337,7 @@ static netstat_list_t netstat_windows_parse_udp6()
 		netstat.local_address=uint8_t_16_to_ipv6(table->table[ii].ucLocalAddr);
 		netstat.foreign_address="0000:0000:0000:0000:0000:0000:0000:0000";
 		netstat.local_port=dword_to_port(table->table[ii].dwLocalPort);
-		netstat.foreign_port="0";
+		netstat.foreign_port=0;
 		netstat.state="-";
 		netstat.pid="-";
 
@@ -430,7 +429,7 @@ static netstat_list_t netstat_windows_parse_tcp4()
 		if(table->table[ii].dwState==2)
 		{
 			netstat.foreign_address="0.0.0.0";
-			netstat.foreign_port="0";
+			netstat.foreign_port=0;
 		}
 
 		if(netstat.pid!="0"&&netstat.state!="TIME_WAIT")
@@ -472,7 +471,7 @@ static netstat_list_t netstat_windows_parse_udp4()
 		netstat.local_address=uint32_t_to_ipv4(table->table[ii].dwLocalAddr);
 		netstat.foreign_address="0.0.0.0";
 		netstat.local_port=dword_to_port(table->table[ii].dwLocalPort);
-		netstat.foreign_port="0";
+		netstat.foreign_port=0;
 		netstat.state="-";
 
 		if(netstat.pid!="0"&&netstat.state!="TIME_WAIT")

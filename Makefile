@@ -15,9 +15,9 @@ linux: $(SRC)/netstat_linux.cpp $(GENERATE_SRC) $(NETSTAT_SRC) $(MIKESTAT_SRC) $
 	$(CXX) $(CFLAGS) $(SRC)/netstat_linux.cpp $(GENERATE_SRC) $(NETSTAT_SRC) $(MIKESTAT_SRC) -o mikestat
 	$(CXX) $(CFLAGS) $(SRC)/netstat_linux.cpp $(GENERATE_SRC) $(NETSTAT_SRC) $(GENFW_SRC) -o genfw
 
-#windows: $(SRC)/netstat_windows.cpp $(GENERATE_SRC) $(NETSTAT_SRC) $(MIKESTAT_SRC) $(GENFW_SRC)
-#	$(CXX) $(CFLAGS) $(SRC)/netstat_windows.cpp $(GENERATE_SRC) $(NETSTAT_SRC) $(MIKESTAT_SRC) -o mikestat
-#	$(CXX) $(CFLAGS) $(SRC)/netstat_windows.cpp $(GENERATE_SRC) $(NETSTAT_SRC) $(GENFW_SRC) -o genfw
+windows: $(SRC)/netstat_windows.cpp $(GENERATE_SRC) $(NETSTAT_SRC) $(MIKESTAT_SRC) $(GENFW_SRC)
+	$(CXX) $(CFLAGS) $(SRC)/netstat_windows.cpp $(GENERATE_SRC) $(NETSTAT_SRC) $(MIKESTAT_SRC) -lIPHlpApi -lWs2_32 -o mikestat
+	$(CXX) $(CFLAGS) $(SRC)/netstat_windows.cpp $(GENERATE_SRC) $(NETSTAT_SRC) $(GENFW_SRC) -lIPHlpApi -lWs2_32 -o genfw
 
 solaris: $(SRC)/netstat_solaris.cpp $(GENERATE_SRC) $(NETSTAT_SRC) $(MIKESTAT_SRC) $(GENFW_SRC)
 	$(CXX) $(CFLAGS) $(SRC)/netstat_solaris.cpp $(GENERATE_SRC) $(NETSTAT_SRC) $(MIKESTAT_SRC) -o mikestat

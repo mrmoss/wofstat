@@ -20,7 +20,7 @@ std::string uint8_t_16_to_ipv6(const uint8_t address[16]);
 uint16_t uint16_t_to_port(const uint16_t port);
 uint16_t hex_to_port(const std::string& hex);
 
-#if(defined(_WIN32)&&!defined(__CYGWIN__))
+#if(defined(_WIN32)||defined(__CYGWIN__))
 	#include <Windows.h>
 
 	uint16_t dword_to_port(const DWORD port);

@@ -6,7 +6,9 @@
 
 #include "netstat.hpp"
 
-void netstat_print(const netstat_t& netstat);
-void netstat_list_print(const netstat_list_t& netstats);
+void print_human(const netstat_t& netstat);
+void print_json(const netstat_t& netstat);
+void print_human(const netstat_list_t& netstats);
+void print_json(const netstat_list_t& netstats);
 
 #endif

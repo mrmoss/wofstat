@@ -1,4 +1,4 @@
-CXX=g++
+CXX=clang++
 OPTS=-O
 CFLAGS=$(OPTS) -Wall
 SRC=src

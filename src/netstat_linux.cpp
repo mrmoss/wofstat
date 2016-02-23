@@ -147,17 +147,17 @@ static netstat_list_t netstat_linux_parse(const std::string& proto,const std::st
 
 		if(proto=="tcp4"||proto=="udp4")
 		{
-			netstat.local_address=hex_to_ipv4(table[ii][1]);
-			netstat.foreign_address=hex_to_ipv4(table[ii][3]);
+			netstat.laddr=hex_to_ipv4(table[ii][1]);
+			netstat.faddr=hex_to_ipv4(table[ii][3]);
 		}
 		else if(proto=="tcp6"||proto=="udp6")
 		{
-			netstat.local_address=hex_to_ipv6(table[ii][1]);
-			netstat.foreign_address=hex_to_ipv6(table[ii][3]);
+			netstat.laddr=hex_to_ipv6(table[ii][1]);
+			netstat.faddr=hex_to_ipv6(table[ii][3]);
 		}
 
-		netstat.local_port=hex_to_port(table[ii][2]);
-		netstat.foreign_port=hex_to_port(table[ii][4]);
+		netstat.lport=hex_to_port(table[ii][2]);
+		netstat.fport=hex_to_port(table[ii][4]);
 
 		if(proto=="udp4"||proto=="udp6")
 			netstat.state="-";

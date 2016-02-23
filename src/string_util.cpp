@@ -6,7 +6,7 @@
 #include <iomanip>
 #include <sstream>
 
-std::string uint32_t_to_ipv4(const uint32_t address)
+std::string u32_to_ipv4(const uint32_t address)
 {
 	std::ostringstream ostr;
 	ostr<<(uint32_t)((uint8_t*)&address)[0]<<"."<<
@@ -49,7 +49,7 @@ std::string hex_to_ipv6(const std::string& hex)
 	return ostr.str();
 }
 
-std::string uint8_t_16_to_ipv6(const uint8_t address[16])
+std::string u8x16_to_ipv6(const uint8_t address[16])
 {
 	std::ostringstream ostr;
 	for(int ii=0;ii<16;ii+=2)
@@ -64,7 +64,7 @@ std::string uint8_t_16_to_ipv6(const uint8_t address[16])
 	return ostr.str();
 }
 
-uint16_t uint16_t_to_port(const uint16_t port)
+uint16_t u16_to_port(const uint16_t port)
 {
 	return ((((uint32_t)((uint8_t*)&port)[0])<<8)+((uint8_t*)&port)[1]);
 }
@@ -80,7 +80,7 @@ uint16_t hex_to_port(const std::string& hex)
 #if(defined(_WIN32)||defined(__CYGWIN__))
 	uint16_t dword_to_port(const DWORD port)
 	{
-		return uint16_t_to_port((uint16_t)port);
+		return u16_to_port((uint16_t)port);
 	}
 #endif
 

@@ -111,25 +111,25 @@ netstat_list_t netstat()
 							if(is_ipv6)
 							{
 								netstat.proto+="6";
-								netstat.local_address=uint8_t_16_to_ipv6((uint8_t*)&si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_laddr.ina_6);
-								netstat.foreign_address=uint8_t_16_to_ipv6((uint8_t*)&si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_faddr.ina_6);
+								netstat.laddr=u8x16_to_ipv6((uint8_t*)&si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_laddr.ina_6);
+								netstat.faddr=u8x16_to_ipv6((uint8_t*)&si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_faddr.ina_6);
 							}
 							else
 							{
 								netstat.proto+="4";
-								netstat.local_address=uint32_t_to_ipv4(si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_laddr.ina_46.i46a_addr4.s_addr);
-								netstat.foreign_address=uint32_t_to_ipv4(si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_faddr.ina_46.i46a_addr4.s_addr);
+								netstat.laddr=u32_to_ipv4(si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_laddr.ina_46.i46a_addr4.s_addr);
+								netstat.faddr=u32_to_ipv4(si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_faddr.ina_46.i46a_addr4.s_addr);
 							}
 
 							if(si.psi.soi_type==SOCK_DGRAM)
 							{
-								netstat.local_port=uint16_t_to_port(si.psi.soi_proto.pri_in.insi_lport);
-								netstat.foreign_port=uint16_t_to_port(si.psi.soi_proto.pri_in.insi_fport);
+								netstat.lport=u16_to_port(si.psi.soi_proto.pri_in.insi_lport);
+								netstat.fport=u16_to_port(si.psi.soi_proto.pri_in.insi_fport);
 							}
 							else
 							{
-								netstat.local_port=uint16_t_to_port(si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_lport);
-								netstat.foreign_port=uint16_t_to_port(si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_fport);
+								netstat.lport=u16_to_port(si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_lport);
+								netstat.fport=u16_to_port(si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_fport);
 							}
 
 							netstats.push_back(netstat);

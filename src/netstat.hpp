@@ -8,10 +8,10 @@
 struct netstat_t
 {
 	std::string proto;
-	std::string local_address;
-	std::string foreign_address;
-	uint16_t local_port;
-	uint16_t foreign_port;
+	std::string laddr;
+	std::string faddr;
+	uint16_t lport;
+	uint16_t fport;
 	std::string state;
 	std::string pid;
 };

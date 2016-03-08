@@ -114,7 +114,7 @@ static netstat_list_t netstat_bsd_parse(const std::string& proto)
 			netstat.laddr=u32_to_ipv4(*(uint32_t*)&entry_udp->xi_inp.inp_laddr);
 			netstat.faddr="0.0.0.0";
 			netstat.lport=u16_to_port(entry_udp->xi_inp.inp_lport);
-			netstat.fport="0";
+			netstat.fport=0;
 			netstat.state="-";
 			netstat.pid="-";
 
@@ -172,7 +172,7 @@ static netstat_list_t netstat_bsd_parse(const std::string& proto)
 				netstat.laddr=u8x16_to_ipv6((uint8_t*)&entry_udp->xi_inp.in6p_laddr);
 				netstat.faddr="0000:0000:0000:0000:0000:0000:0000:0000";
 				netstat.lport=u16_to_port(entry_udp->xi_inp.inp_lport);
-				netstat.fport="0";
+				netstat.fport=0;
 				netstat.state="-";
 				netstat.pid="-";
 

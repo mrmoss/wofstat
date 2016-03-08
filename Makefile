@@ -19,7 +19,11 @@ else
 		NETSTAT_SRC+=$(SRC)/netstat_osx.cpp
 	endif
 	ifeq ($(os),SunOS)
-		NETSTAT_SRC+=$(SRC)/netstat_solaris.cpp -D NEWSOLARIS
+		NETSTAT_SRC+=$(SRC)/netstat_solaris.cpp
+
+		ifeq ($(shell if [ $(shell uname -r|cut	-d'.' -f2) -ge 11 ];then echo 'new';else echo 'old';fi),new)
+			CFLAGS+=-D NEWSOLARIS
+		endif
 	endif
 	ifeq ($(os),$(filter $(os),FreeBSD GNU/kFreeBSD NetBSD OpenBSD))
 		NETSTAT_SRC+=$(SRC)/netstat_bsd.cpp

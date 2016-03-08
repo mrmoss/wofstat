@@ -210,7 +210,7 @@ netstat_list_t netstat()
 					netstat.laddr=u32_to_ipv4(entry->udpLocalAddress);
 					netstat.faddr="0.0.0.0";
 					netstat.lport=u16_to_port(htons(entry->udpLocalPort));
-					netstat.fport="0";
+					netstat.fport=0;
 					netstat.state="-";
 					netstat.pid="-";
 
@@ -233,7 +233,7 @@ netstat_list_t netstat()
 						netstat.laddr=u8x16_to_ipv6(entry->udp6LocalAddress.s6_addr);
 						netstat.faddr="0000:0000:0000:0000:0000:0000:0000:0000";
 						netstat.lport=u16_to_port(htons(entry->udp6LocalPort));
-						netstat.fport="0";
+						netstat.fport=0;
 						netstat.state="-";
 						netstat.pid="-";
 

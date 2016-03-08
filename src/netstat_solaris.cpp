@@ -214,8 +214,10 @@ netstat_list_t netstat()
 					netstat.state="-";
 					netstat.pid="-";
 
+					#if(defined(NEW_MIB_COMPLIANT)||defined(_KERNEL))
 					if(netstat.state!="TIME_WAIT")
 						netstat.pid=to_string(entry->udpCreationProcess);
+					#endif
 
 					udp4.push_back(netstat);
 				}
@@ -237,8 +239,10 @@ netstat_list_t netstat()
 						netstat.state="-";
 						netstat.pid="-";
 
+						#if(defined(NEW_MIB_COMPLIANT)||defined(_KERNEL))
 						if(netstat.state!="TIME_WAIT")
 							netstat.pid=to_string(entry->udp6CreationProcess);
+						#endif
 
 						udp6.push_back(netstat);
 					}

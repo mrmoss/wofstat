@@ -168,7 +168,7 @@ netstat_list_t netstat()
 					netstat.state=state_int_to_string(entry->tcpConnState);
 					netstat.pid="-";
 
-					#if(defined(NEW_MIB_COMPLIANT)||defined(_KERNEL))
+					#if(defined(NEWSOLARIS))
 					if(netstat.state!="TIME_WAIT")
 						netstat.pid=to_string(entry->tcpConnCreationProcess);
 					#endif
@@ -193,7 +193,7 @@ netstat_list_t netstat()
 						netstat.state=state_int_to_string(entry->tcp6ConnState);
 						netstat.pid="-";
 
-						#if(defined(NEW_MIB_COMPLIANT)||defined(_KERNEL))
+						#if(defined(NEWSOLARIS))
 						if(netstat.state!="TIME_WAIT")
 							netstat.pid=to_string(entry->tcp6ConnCreationProcess);
 						#endif
@@ -218,7 +218,7 @@ netstat_list_t netstat()
 					netstat.state="-";
 					netstat.pid="-";
 
-					#if(defined(NEW_MIB_COMPLIANT)||defined(_KERNEL))
+					#if(defined(NEWSOLARIS))
 					if(netstat.state!="TIME_WAIT")
 						netstat.pid=to_string(entry->udpCreationProcess);
 					#endif
@@ -243,7 +243,7 @@ netstat_list_t netstat()
 						netstat.state="-";
 						netstat.pid="-";
 
-						#if(defined(NEW_MIB_COMPLIANT)||defined(_KERNEL))
+						#if(defined(NEWSOLARIS))
 						if(netstat.state!="TIME_WAIT")
 							netstat.pid=to_string(entry->udp6CreationProcess);
 						#endif

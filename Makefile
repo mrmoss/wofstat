@@ -19,7 +19,7 @@ else
 		NETSTAT_SRC+=$(SRC)/netstat_osx.cpp
 	endif
 	ifeq ($(os),SunOS)
-		NETSTAT_SRC+=$(SRC)/netstat_solaris.cpp
+		NETSTAT_SRC+=$(SRC)/netstat_solaris.cpp -D NEWSOLARIS
 	endif
 	ifeq ($(os),$(filter $(os),FreeBSD GNU/kFreeBSD NetBSD OpenBSD))
 		NETSTAT_SRC+=$(SRC)/netstat_bsd.cpp

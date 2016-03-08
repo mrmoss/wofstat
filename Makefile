@@ -1,4 +1,4 @@
-CXX=clang++
+CXX=g++
 OPTS=-O
 CFLAGS=$(OPTS) -Wall
 SRC=src
@@ -29,7 +29,7 @@ endif
 all: mikestat
 
 mikestat: $(NETSTAT_SRC) $(MIKESTAT_SRC)
-	$(CXX) $(LIB) $(CFLAGS) $(NETSTAT_SRC) $(MIKESTAT_SRC) -o mikestat
+	$(CXX) $(CFLAGS) $(NETSTAT_SRC) $(MIKESTAT_SRC) $(LIB) -o mikestat
 
 clean:
 	- rm -f mikestat mikestat.exe

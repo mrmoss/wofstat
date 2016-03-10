@@ -5,7 +5,7 @@
 //	Windows 7 (VS2013, MinGW FAILS DUE TO HEADER DECLARATION CHANGES)
 //	Windows 8.1 (VS2013, MinGW FAILS DUE TO HEADER DECLARATION CHANGES)
 
-#include "netstat.hpp"
+#include "natstat.hpp"
 
 #include <winsock2.h>
 #include <IPHlpApi.h>
@@ -17,7 +17,7 @@
 #include <vector>
 #include <stdint.h>
 
-#include "netstat_util.hpp"
+#include "natstat_util.hpp"
 #include "string_util.hpp"
 
 static const size_t states_size=13;
@@ -39,9 +39,9 @@ static std::string states[states_size]=
 };
 
 #if(defined(_WIN32_WINNT)&&_WIN32_WINNT>=_WIN32_WINNT_WS03)
-static netstat_list_t netstat_windows_parse_tcp4()
+static natstat_list_t natstat_windows_parse_tcp4()
 {
-	netstat_list_t netstats;
+	natstat_list_t natstats;
 	MIB_TCPTABLE_OWNER_PID* table=(MIB_TCPTABLE_OWNER_PID*)malloc(sizeof(MIB_TCPTABLE_OWNER_PID));
 	DWORD table_size=sizeof(MIB_TCPTABLE_OWNER_PID);
 	DWORD error=GetExtendedTcpTable(table,&table_size,true,AF_INET,TCP_TABLE_OWNER_PID_ALL,0);
@@ -53,60 +53,60 @@ static netstat_list_t netstat_windows_parse_tcp4()
 	if(error==ERROR_INVALID_PARAMETER)
 	{
 		free(table);
-		throw std::runtime_error("netstat_windows_parse_tcp4 - GetExtendedTcpTable returned ERROR_INVALID_PARAMETER.");
+		throw std::runtime_error("natstat_windows_parse_tcp4 - GetExtendedTcpTable returned ERROR_INVALID_PARAMETER.");
 	}
 	if(error==ERROR_NOT_SUPPORTED)
 	{
 		free(table);
-		return netstats;
+		return natstats;
 	}
 	error=GetExtendedTcpTable(table,&table_size,true,AF_INET,TCP_TABLE_OWNER_PID_ALL,0);
 	if(error==ERROR_INSUFFICIENT_BUFFER)
 	{
 		free(table);
-		throw std::runtime_error("netstat_windows_parse_tcp4 - GetExtendedTcpTable returned ERROR_INSUFFICIENT_BUFFER.");
+		throw std::runtime_error("natstat_windows_parse_tcp4 - GetExtendedTcpTable returned ERROR_INSUFFICIENT_BUFFER.");
 	}
 	if(error==ERROR_INVALID_PARAMETER)
 	{
 		free(table);
-		throw std::runtime_error("netstat_windows_parse_tcp4 - GetExtendedTcpTable returned ERROR_INVALID_PARAMETER.");
+		throw std::runtime_error("natstat_windows_parse_tcp4 - GetExtendedTcpTable returned ERROR_INVALID_PARAMETER.");
 	}
 	if(error==ERROR_NOT_SUPPORTED)
 	{
 		free(table);
-		return netstats;
+		return natstats;
 	}
 	for(size_t ii=0;ii<table->dwNumEntries;++ii)
 	{
-		netstat_t netstat;
-		netstat.proto="tcp4";
-		netstat.laddr=u32_to_ipv4(table->table[ii].dwLocalAddr);
-		netstat.faddr=u32_to_ipv4(table->table[ii].dwRemoteAddr);
-		netstat.lport=dword_to_port(table->table[ii].dwLocalPort);
-		netstat.fport=dword_to_port(table->table[ii].dwRemotePort);
-		netstat.pid="-";
+		natstat_t natstat;
+		natstat.proto="tcp4";
+		natstat.laddr=u32_to_ipv4(table->table[ii].dwLocalAddr);
+		natstat.faddr=u32_to_ipv4(table->table[ii].dwRemoteAddr);
+		natstat.lport=dword_to_port(table->table[ii].dwLocalPort);
+		natstat.fport=dword_to_port(table->table[ii].dwRemotePort);
+		natstat.pid="-";
 		if(table->table[ii].dwState>=states_size)
 		{
 			free(table);
-			throw std::runtime_error("netstat_windows_parse_tcp4 - Invalid state returned.");
+			throw std::runtime_error("natstat_windows_parse_tcp4 - Invalid state returned.");
 		}
-		netstat.state=states[table->table[ii].dwState];
+		natstat.state=states[table->table[ii].dwState];
 		if(table->table[ii].dwState==2)
 		{
-			netstat.faddr="0.0.0.0";
-			netstat.fport=0;
+			natstat.faddr="0.0.0.0";
+			natstat.fport=0;
 		}
-		if(netstat.pid!="0"&&netstat.state!="TIME_WAIT")
-			netstat.pid=to_string(table->table[ii].dwOwningPid);
-		netstats.push_back(netstat);
+		if(natstat.pid!="0"&&natstat.state!="TIME_WAIT")
+			natstat.pid=to_string(table->table[ii].dwOwningPid);
+		natstats.push_back(natstat);
 	}
 	free(table);
-	return netstats;
+	return natstats;
 }
 
-static netstat_list_t netstat_windows_parse_udp4()
+static natstat_list_t natstat_windows_parse_udp4()
 {
-	netstat_list_t netstats;
+	natstat_list_t natstats;
 	MIB_UDPTABLE_OWNER_PID* table=(MIB_UDPTABLE_OWNER_PID*)malloc(sizeof(MIB_UDPTABLE_OWNER_PID));
 	DWORD table_size=sizeof(MIB_UDPTABLE_OWNER_PID);
 	DWORD error=GetExtendedUdpTable(table,&table_size,true,AF_INET,UDP_TABLE_OWNER_PID,0);
@@ -118,45 +118,45 @@ static netstat_list_t netstat_windows_parse_udp4()
 	if(error==ERROR_INVALID_PARAMETER)
 	{
 		free(table);
-		throw std::runtime_error("netstat_windows_parse_udp4 - GetExtendedUdpTable returned ERROR_INVALID_PARAMETER.");
+		throw std::runtime_error("natstat_windows_parse_udp4 - GetExtendedUdpTable returned ERROR_INVALID_PARAMETER.");
 	}
 	if(error==ERROR_NOT_SUPPORTED)
 	{
 		free(table);
-		return netstats;
+		return natstats;
 	}
 	error=GetExtendedUdpTable(table,&table_size,true,AF_INET,UDP_TABLE_OWNER_PID,0);
 	if(error==ERROR_INSUFFICIENT_BUFFER)
 	{
 		free(table);
-		throw std::runtime_error("netstat_windows_parse_udp4 - GetExtendedUdpTable returned ERROR_INSUFFICIENT_BUFFER.");
+		throw std::runtime_error("natstat_windows_parse_udp4 - GetExtendedUdpTable returned ERROR_INSUFFICIENT_BUFFER.");
 	}
 	if(error==ERROR_INVALID_PARAMETER)
 	{
 		free(table);
-		throw std::runtime_error("netstat_windows_parse_udp4 - GetExtendedUdpTable returned ERROR_INVALID_PARAMETER.");
+		throw std::runtime_error("natstat_windows_parse_udp4 - GetExtendedUdpTable returned ERROR_INVALID_PARAMETER.");
 	}
 	if(error==ERROR_NOT_SUPPORTED)
 	{
 		free(table);
-		return netstats;
+		return natstats;
 	}
 	for(size_t ii=0;ii<table->dwNumEntries;++ii)
 	{
-		netstat_t netstat;
-		netstat.proto="udp4";
-		netstat.laddr=u32_to_ipv4(table->table[ii].dwLocalAddr);
-		netstat.faddr="0.0.0.0";
-		netstat.lport=dword_to_port(table->table[ii].dwLocalPort);
-		netstat.fport=0;
-		netstat.state="-";
-		netstat.pid="-";
-		if(netstat.pid!="0"&&netstat.state!="TIME_WAIT")
-			netstat.pid=to_string(table->table[ii].dwOwningPid);
-		netstats.push_back(netstat);
+		natstat_t natstat;
+		natstat.proto="udp4";
+		natstat.laddr=u32_to_ipv4(table->table[ii].dwLocalAddr);
+		natstat.faddr="0.0.0.0";
+		natstat.lport=dword_to_port(table->table[ii].dwLocalPort);
+		natstat.fport=0;
+		natstat.state="-";
+		natstat.pid="-";
+		if(natstat.pid!="0"&&natstat.state!="TIME_WAIT")
+			natstat.pid=to_string(table->table[ii].dwOwningPid);
+		natstats.push_back(natstat);
 	}
 	free(table);
-	return netstats;
+	return natstats;
 }
 
 #if(defined(_WIN32_WINNT)&&_WIN32_WINNT>=_WIN32_WINNT_VISTA)
@@ -195,9 +195,9 @@ static netstat_list_t netstat_windows_parse_udp4()
 
 #endif
 
-static netstat_list_t netstat_windows_parse_tcp6()
+static natstat_list_t natstat_windows_parse_tcp6()
 {
-	netstat_list_t netstats;
+	natstat_list_t natstats;
 	MIB_TCP6TABLE_OWNER_PID* table=(MIB_TCP6TABLE_OWNER_PID*)malloc(sizeof(MIB_TCP6TABLE_OWNER_PID));
 	DWORD table_size=sizeof(MIB_TCP6TABLE_OWNER_PID);
 	DWORD error=GetExtendedTcpTable(table,&table_size,true,AF_INET6,TCP_TABLE_OWNER_PID_ALL,0);
@@ -209,62 +209,62 @@ static netstat_list_t netstat_windows_parse_tcp6()
 	if(error==ERROR_INVALID_PARAMETER)
 	{
 		free(table);
-		throw std::runtime_error("netstat_windows_parse_tcp6 - GetExtendedTcpTable returned ERROR_INVALID_PARAMETER.");
+		throw std::runtime_error("natstat_windows_parse_tcp6 - GetExtendedTcpTable returned ERROR_INVALID_PARAMETER.");
 	}
 	if(error==ERROR_NOT_SUPPORTED)
 	{
 		free(table);
-		return netstats;
+		return natstats;
 	}
 	error=GetExtendedTcpTable(table,&table_size,true,AF_INET6,TCP_TABLE_OWNER_PID_ALL,0);
 	if(error==ERROR_INSUFFICIENT_BUFFER)
 	{
 		free(table);
-		throw std::runtime_error("netstat_windows_parse_tcp6 - GetExtendedTcpTable returned ERROR_INSUFFICIENT_BUFFER.");
+		throw std::runtime_error("natstat_windows_parse_tcp6 - GetExtendedTcpTable returned ERROR_INSUFFICIENT_BUFFER.");
 	}
 	if(error==ERROR_INVALID_PARAMETER)
 	{
 		free(table);
-		throw std::runtime_error("netstat_windows_parse_tcp6 - GetExtendedTcpTable returned ERROR_INVALID_PARAMETER.");
+		throw std::runtime_error("natstat_windows_parse_tcp6 - GetExtendedTcpTable returned ERROR_INVALID_PARAMETER.");
 	}
 	if(error==ERROR_NOT_SUPPORTED)
 	{
 		free(table);
-		return netstats;
+		return natstats;
 	}
 	for(size_t ii=0;ii<table->dwNumEntries;++ii)
 	{
-		netstat_t netstat;
-		netstat.proto="tcp6";
-		netstat.laddr=u8x16_to_ipv6(table->table[ii].ucLocalAddr);
-		netstat.faddr=u8x16_to_ipv6(table->table[ii].ucRemoteAddr);
-		netstat.lport=dword_to_port(table->table[ii].dwLocalPort);
-		netstat.fport=dword_to_port(table->table[ii].dwRemotePort);
-		netstat.pid="-";
+		natstat_t natstat;
+		natstat.proto="tcp6";
+		natstat.laddr=u8x16_to_ipv6(table->table[ii].ucLocalAddr);
+		natstat.faddr=u8x16_to_ipv6(table->table[ii].ucRemoteAddr);
+		natstat.lport=dword_to_port(table->table[ii].dwLocalPort);
+		natstat.fport=dword_to_port(table->table[ii].dwRemotePort);
+		natstat.pid="-";
 		if(table->table[ii].dwState>=states_size)
 		{
 			free(table);
-			throw std::runtime_error("netstat_windows_parse_tcp6 - Invalid state returned.");
+			throw std::runtime_error("natstat_windows_parse_tcp6 - Invalid state returned.");
 		}
-		netstat.state=states[table->table[ii].dwState];
+		natstat.state=states[table->table[ii].dwState];
 		if(table->table[ii].dwState==2)
 		{
-			netstat.faddr="0000:0000:0000:0000:0000:0000:0000:0000";
-			netstat.fport=0;
+			natstat.faddr="0000:0000:0000:0000:0000:0000:0000:0000";
+			natstat.fport=0;
 		}
-		if(netstat.pid!="0"&&netstat.state!="TIME_WAIT")
-			netstat.pid=to_string(table->table[ii].dwOwningPid);
-		netstat.laddr=ipv6_prettify(netstat.laddr);
-		netstat.faddr=ipv6_prettify(netstat.faddr);
-		netstats.push_back(netstat);
+		if(natstat.pid!="0"&&natstat.state!="TIME_WAIT")
+			natstat.pid=to_string(table->table[ii].dwOwningPid);
+		natstat.laddr=ipv6_prettify(natstat.laddr);
+		natstat.faddr=ipv6_prettify(natstat.faddr);
+		natstats.push_back(natstat);
 	}
 	free(table);
-	return netstats;
+	return natstats;
 }
 
-static netstat_list_t netstat_windows_parse_udp6()
+static natstat_list_t natstat_windows_parse_udp6()
 {
-	netstat_list_t netstats;
+	natstat_list_t natstats;
 	MIB_UDP6TABLE_OWNER_PID* table=(MIB_UDP6TABLE_OWNER_PID*)malloc(sizeof(MIB_UDP6TABLE_OWNER_PID));
 	DWORD table_size=sizeof(MIB_UDP6TABLE_OWNER_PID);
 	DWORD error=GetExtendedUdpTable(table,&table_size,true,AF_INET6,UDP_TABLE_OWNER_PID,0);
@@ -276,47 +276,47 @@ static netstat_list_t netstat_windows_parse_udp6()
 	if(error==ERROR_INVALID_PARAMETER)
 	{
 		free(table);
-		throw std::runtime_error("netstat_windows_parse_udp6 - GetExtendedUdpTable returned ERROR_INVALID_PARAMETER.");
+		throw std::runtime_error("natstat_windows_parse_udp6 - GetExtendedUdpTable returned ERROR_INVALID_PARAMETER.");
 	}
 	if(error==ERROR_NOT_SUPPORTED)
 	{
 		free(table);
-		return netstats;
+		return natstats;
 	}
 	error=GetExtendedUdpTable(table,&table_size,true,AF_INET6,UDP_TABLE_OWNER_PID,0);
 	if(error==ERROR_INSUFFICIENT_BUFFER)
 	{
 		free(table);
-		throw std::runtime_error("netstat_windows_parse_udp6 - GetExtendedUdpTable returned ERROR_INSUFFICIENT_BUFFER.");
+		throw std::runtime_error("natstat_windows_parse_udp6 - GetExtendedUdpTable returned ERROR_INSUFFICIENT_BUFFER.");
 	}
 	if(error==ERROR_INVALID_PARAMETER)
 	{
 		free(table);
-		throw std::runtime_error("netstat_windows_parse_udp6 - GetExtendedUdpTable returned ERROR_INVALID_PARAMETER.");
+		throw std::runtime_error("natstat_windows_parse_udp6 - GetExtendedUdpTable returned ERROR_INVALID_PARAMETER.");
 	}
 	if(error==ERROR_NOT_SUPPORTED)
 	{
 		free(table);
-		return netstats;
+		return natstats;
 	}
 	for(size_t ii=0;ii<table->dwNumEntries;++ii)
 	{
-		netstat_t netstat;
-		netstat.proto="udp6";
-		netstat.laddr=u8x16_to_ipv6(table->table[ii].ucLocalAddr);
-		netstat.faddr="0000:0000:0000:0000:0000:0000:0000:0000";
-		netstat.lport=dword_to_port(table->table[ii].dwLocalPort);
-		netstat.fport=0;
-		netstat.state="-";
-		netstat.pid="-";
-		if(netstat.pid!="0"&&netstat.state!="TIME_WAIT")
-			netstat.pid=to_string(table->table[ii].dwOwningPid);
-		netstat.laddr=ipv6_prettify(netstat.laddr);
-		netstat.faddr=ipv6_prettify(netstat.faddr);
-		netstats.push_back(netstat);
+		natstat_t natstat;
+		natstat.proto="udp6";
+		natstat.laddr=u8x16_to_ipv6(table->table[ii].ucLocalAddr);
+		natstat.faddr="0000:0000:0000:0000:0000:0000:0000:0000";
+		natstat.lport=dword_to_port(table->table[ii].dwLocalPort);
+		natstat.fport=0;
+		natstat.state="-";
+		natstat.pid="-";
+		if(natstat.pid!="0"&&natstat.state!="TIME_WAIT")
+			natstat.pid=to_string(table->table[ii].dwOwningPid);
+		natstat.laddr=ipv6_prettify(natstat.laddr);
+		natstat.faddr=ipv6_prettify(natstat.faddr);
+		natstats.push_back(natstat);
 	}
 	free(table);
-	return netstats;
+	return natstats;
 }
 
 #else
@@ -353,105 +353,105 @@ struct MIB_UDPTABLE_EX
 typedef DWORD (WINAPI* PROCALLOCATEANDGETTCPEXTABLEFROMSTACK)(MIB_TCPTABLE_EX**,BOOL,HANDLE,DWORD,DWORD);
 typedef DWORD (WINAPI* PROCALLOCATEANDGETUDPEXTABLEFROMSTACK)(MIB_UDPTABLE_EX**,BOOL,HANDLE,DWORD,DWORD);
 
-static netstat_list_t netstat_windows_parse_tcp4()
+static natstat_list_t natstat_windows_parse_tcp4()
 {
 	HMODULE hModule=LoadLibrary("iphlpapi.dll");
 	if(hModule==NULL)
-		throw std::runtime_error("netstat_windows_parse_tcp4 - Could not load iphlpapi.dll.");
+		throw std::runtime_error("natstat_windows_parse_tcp4 - Could not load iphlpapi.dll.");
 	PROCALLOCATEANDGETTCPEXTABLEFROMSTACK AllocateAndGetTcpExTableFromStack=(PROCALLOCATEANDGETTCPEXTABLEFROMSTACK)GetProcAddress(hModule,"AllocateAndGetTcpExTableFromStack");
 	if(AllocateAndGetTcpExTableFromStack==NULL)
-		throw std::runtime_error("netstat_windows_parse_tcp4 - Could not locate function AllocateAndGetUdpExTableFromStack from iphlpapi.dll.");
+		throw std::runtime_error("natstat_windows_parse_tcp4 - Could not locate function AllocateAndGetUdpExTableFromStack from iphlpapi.dll.");
 	MIB_TCPTABLE_EX* table = NULL;
 	DWORD error=AllocateAndGetTcpExTableFromStack(&table,TRUE,GetProcessHeap(),0,2);
-	netstat_list_t netstats;
+	natstat_list_t natstats;
 	if(error!=NO_ERROR)
 	{
 		HeapFree(GetProcessHeap(),0,table);
-		throw std::runtime_error("netstat_windows_parse_tcp4 - External DLL call AllocateAndGetTcpExTableFromStack failed.");
+		throw std::runtime_error("natstat_windows_parse_tcp4 - External DLL call AllocateAndGetTcpExTableFromStack failed.");
 	}
 	for(size_t ii=0;ii<table->dwNumEntries;++ii)
 	{
 		if(table->table[ii].dwState>=states_size)
 		{
 			HeapFree(GetProcessHeap(),0,table);
-			throw std::runtime_error("netstat_windows_parse_tcp4 - Invalid state returned.");
+			throw std::runtime_error("natstat_windows_parse_tcp4 - Invalid state returned.");
 		}
-		netstat_t netstat;
-		netstat.proto="tcp4";
-		netstat.laddr=u32_to_ipv4(table->table[ii].dwLocalAddr);
-		netstat.faddr=u32_to_ipv4(table->table[ii].dwRemoteAddr);
-		netstat.lport=dword_to_port(table->table[ii].dwLocalPort);
-		netstat.fport=dword_to_port(table->table[ii].dwRemotePort);
-		netstat.state=states[table->table[ii].dwState];
-		netstat.pid="-";
+		natstat_t natstat;
+		natstat.proto="tcp4";
+		natstat.laddr=u32_to_ipv4(table->table[ii].dwLocalAddr);
+		natstat.faddr=u32_to_ipv4(table->table[ii].dwRemoteAddr);
+		natstat.lport=dword_to_port(table->table[ii].dwLocalPort);
+		natstat.fport=dword_to_port(table->table[ii].dwRemotePort);
+		natstat.state=states[table->table[ii].dwState];
+		natstat.pid="-";
 		if(table->table[ii].dwState==2)
 		{
-			netstat.faddr="0.0.0.0";
-			netstat.fport=0;
+			natstat.faddr="0.0.0.0";
+			natstat.fport=0;
 		}
-		if(netstat.pid!="0"&&netstat.state!="TIME_WAIT")
-			netstat.pid=to_string(table->table[ii].dwProcessId);
-		netstats.push_back(netstat);
+		if(natstat.pid!="0"&&natstat.state!="TIME_WAIT")
+			natstat.pid=to_string(table->table[ii].dwProcessId);
+		natstats.push_back(natstat);
 	}
 	HeapFree(GetProcessHeap(),0,table);
-	return netstats;
+	return natstats;
 }
 
-static netstat_list_t netstat_windows_parse_udp4()
+static natstat_list_t natstat_windows_parse_udp4()
 {
 	HMODULE hModule=LoadLibrary("iphlpapi.dll");
 	if(hModule==NULL)
-		throw std::runtime_error("netstat_windows_parse_udp4 - Could not load iphlpapi.dll.");
+		throw std::runtime_error("natstat_windows_parse_udp4 - Could not load iphlpapi.dll.");
 	PROCALLOCATEANDGETUDPEXTABLEFROMSTACK AllocateAndGetUdpExTableFromStack=(PROCALLOCATEANDGETUDPEXTABLEFROMSTACK)GetProcAddress(hModule,"AllocateAndGetUdpExTableFromStack");
 	if(AllocateAndGetUdpExTableFromStack==NULL)
-		throw std::runtime_error("netstat_windows_parse_udp4 - Could not locate function AllocateAndGetUdpExTableFromStack from iphlpapi.dll.");
+		throw std::runtime_error("natstat_windows_parse_udp4 - Could not locate function AllocateAndGetUdpExTableFromStack from iphlpapi.dll.");
 	MIB_UDPTABLE_EX* table = NULL;
 	DWORD error=AllocateAndGetUdpExTableFromStack(&table,TRUE,GetProcessHeap(),0,2);
-	netstat_list_t netstats;
+	natstat_list_t natstats;
 	if(error!=NO_ERROR)
 	{
 		HeapFree(GetProcessHeap(),0,table);
-		throw std::runtime_error("netstat_windows_parse_udp4 - External DLL call AllocateAndGetUdpExTableFromStack failed.");
+		throw std::runtime_error("natstat_windows_parse_udp4 - External DLL call AllocateAndGetUdpExTableFromStack failed.");
 	}
 	for(size_t ii=0;ii<table->dwNumEntries;++ii)
 	{
-		netstat_t netstat;
-		netstat.proto="udp4";
-		netstat.laddr=u32_to_ipv4(table->table[ii].dwLocalAddr);
-		netstat.faddr="0.0.0.0";
-		netstat.lport=dword_to_port(table->table[ii].dwLocalPort);
-		netstat.fport=0;
-		netstat.state="-";
-		if(netstat.pid!="0"&&netstat.state!="TIME_WAIT")
-			netstat.pid=to_string(table->table[ii].dwProcessId);
-		netstats.push_back(netstat);
+		natstat_t natstat;
+		natstat.proto="udp4";
+		natstat.laddr=u32_to_ipv4(table->table[ii].dwLocalAddr);
+		natstat.faddr="0.0.0.0";
+		natstat.lport=dword_to_port(table->table[ii].dwLocalPort);
+		natstat.fport=0;
+		natstat.state="-";
+		if(natstat.pid!="0"&&natstat.state!="TIME_WAIT")
+			natstat.pid=to_string(table->table[ii].dwProcessId);
+		natstats.push_back(natstat);
 	}
 	HeapFree(GetProcessHeap(),0,table);
-	return netstats;
+	return natstats;
 }
 
 #endif
 
-netstat_list_t netstat()
+natstat_list_t natstat()
 {
-	netstat_list_t tcp4=netstat_windows_parse_tcp4();
-	netstat_list_t udp4=netstat_windows_parse_udp4();
+	natstat_list_t tcp4=natstat_windows_parse_tcp4();
+	natstat_list_t udp4=natstat_windows_parse_udp4();
 	#if(defined(_WIN32_WINNT)&&_WIN32_WINNT>=_WIN32_WINNT_WS03)
-	netstat_list_t tcp6=netstat_windows_parse_tcp6();
-	netstat_list_t udp6=netstat_windows_parse_udp6();
+	natstat_list_t tcp6=natstat_windows_parse_tcp6();
+	natstat_list_t udp6=natstat_windows_parse_udp6();
 	#endif
-	netstat_list_t netstats;
+	natstat_list_t natstats;
 	for(size_t ii=0;ii<tcp4.size();++ii)
-		netstats.push_back(tcp4[ii]);
+		natstats.push_back(tcp4[ii]);
 	#if(defined(_WIN32_WINNT)&&_WIN32_WINNT>=_WIN32_WINNT_WS03)
 	for(size_t ii=0;ii<tcp6.size();++ii)
-		netstats.push_back(tcp6[ii]);
+		natstats.push_back(tcp6[ii]);
 	#endif
 	for(size_t ii=0;ii<udp4.size();++ii)
-		netstats.push_back(udp4[ii]);
+		natstats.push_back(udp4[ii]);
 	#if(defined(_WIN32_WINNT)&&_WIN32_WINNT>=_WIN32_WINNT_WS03)
 	for(size_t ii=0;ii<udp6.size();++ii)
-		netstats.push_back(udp6[ii]);
+		natstats.push_back(udp6[ii]);
 	#endif
-	return netstats;
+	return natstats;
 }

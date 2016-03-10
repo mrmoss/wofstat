@@ -7,7 +7,7 @@
 //	openSUSE 13.1 (g++)
 //	CentOS 5.7 (g++)
 
-#include "netstat.hpp"
+#include "natstat.hpp"
 
 #include <algorithm>
 #include <cstdio>
@@ -28,7 +28,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "netstat_util.hpp"
+#include "natstat_util.hpp"
 #include "string_util.hpp"
 
 static const size_t states_size=14;
@@ -108,7 +108,7 @@ static std::string hex_to_state(const std::string& hex)
 	return states[state];
 }
 
-static netstat_list_t netstat_linux_parse(const std::string& proto,const std::string& data,const lookup_list_t& pid_lookups)
+static natstat_list_t natstat_linux_parse(const std::string& proto,const std::string& data,const lookup_list_t& pid_lookups)
 {
 	table_t table;
 	list_t lines=string_to_lines(data);
@@ -119,35 +119,35 @@ static netstat_list_t netstat_linux_parse(const std::string& proto,const std::st
 		if(columns.size()>0&&is_int(columns[0]))
 			table.push_back(columns);
 	}
-	netstat_list_t netstats;
+	natstat_list_t natstats;
 	list_t inodes;
 	for(size_t ii=0;ii<table.size();++ii)
 	{
-		netstat_t netstat;
-		netstat.proto=proto;
+		natstat_t natstat;
+		natstat.proto=proto;
 		if(proto=="tcp4"||proto=="udp4")
 		{
-			netstat.laddr=hex_to_ipv4(table[ii][1]);
-			netstat.faddr=hex_to_ipv4(table[ii][3]);
+			natstat.laddr=hex_to_ipv4(table[ii][1]);
+			natstat.faddr=hex_to_ipv4(table[ii][3]);
 		}
 		else if(proto=="tcp6"||proto=="udp6")
 		{
-			netstat.laddr=hex_to_ipv6(table[ii][1]);
-			netstat.faddr=hex_to_ipv6(table[ii][3]);
-			netstat.laddr=ipv6_prettify(netstat.laddr);
-			netstat.faddr=ipv6_prettify(netstat.faddr);
+			natstat.laddr=hex_to_ipv6(table[ii][1]);
+			natstat.faddr=hex_to_ipv6(table[ii][3]);
+			natstat.laddr=ipv6_prettify(natstat.laddr);
+			natstat.faddr=ipv6_prettify(natstat.faddr);
 		}
-		netstat.lport=hex_to_port(table[ii][2]);
-		netstat.fport=hex_to_port(table[ii][4]);
+		natstat.lport=hex_to_port(table[ii][2]);
+		natstat.fport=hex_to_port(table[ii][4]);
 		if(proto=="udp4"||proto=="udp6")
-			netstat.state="-";
+			natstat.state="-";
 		else
-			netstat.state=hex_to_state(table[ii][5]);
+			natstat.state=hex_to_state(table[ii][5]);
 		inodes.push_back(table[ii][13]);
-		netstat.pid="-";
-		netstats.push_back(netstat);
+		natstat.pid="-";
+		natstats.push_back(natstat);
 	}
-	for(size_t ii=0;ii<netstats.size();++ii)
+	for(size_t ii=0;ii<natstats.size();++ii)
 	{
 		for(size_t jj=0;jj<pid_lookups.size();++jj)
 		{
@@ -155,16 +155,16 @@ static netstat_list_t netstat_linux_parse(const std::string& proto,const std::st
 			{
 				if(inodes[ii]==pid_lookups[jj].second.substr(8,pid_lookups[jj].second.size()-9))
 				{
-					netstats[ii].pid=pid_lookups[jj].first;
+					natstats[ii].pid=pid_lookups[jj].first;
 					break;
 				}
 			}
 		}
 	}
-	return netstats;
+	return natstats;
 }
 
-netstat_list_t netstat()
+natstat_list_t natstat()
 {
 	lookup_list_t pid_lookups;
 	list_t directories=list_directories("/proc");
@@ -194,26 +194,26 @@ netstat_list_t netstat()
 		throw std::runtime_error("Could not read file named \"/proc/net/tcp\".");
 	if(!file_to_string("/proc/net/udp",udp4_data))
 		throw std::runtime_error("Could not read file named \"/proc/net/udp\".");
-	netstat_list_t tcp4=netstat_linux_parse("tcp4",tcp4_data,pid_lookups);
-	netstat_list_t tcp6;
-	netstat_list_t udp4=netstat_linux_parse("udp4",udp4_data,pid_lookups);
-	netstat_list_t udp6;
+	natstat_list_t tcp4=natstat_linux_parse("tcp4",tcp4_data,pid_lookups);
+	natstat_list_t tcp6;
+	natstat_list_t udp4=natstat_linux_parse("udp4",udp4_data,pid_lookups);
+	natstat_list_t udp6;
 	bool ipv6_support=file_to_string("/proc/net/tcp6",tcp6_data)&&file_to_string("/proc/net/udp6",udp6_data);
 	if(ipv6_support)
 	{
-		tcp6=netstat_linux_parse("tcp6",tcp6_data,pid_lookups);
-		udp6=netstat_linux_parse("udp6",udp6_data,pid_lookups);
+		tcp6=natstat_linux_parse("tcp6",tcp6_data,pid_lookups);
+		udp6=natstat_linux_parse("udp6",udp6_data,pid_lookups);
 	}
-	netstat_list_t netstats;
+	natstat_list_t natstats;
 	for(size_t ii=0;ii<tcp4.size();++ii)
-		netstats.push_back(tcp4[ii]);
+		natstats.push_back(tcp4[ii]);
 	if(ipv6_support)
 		for(size_t ii=0;ii<tcp6.size();++ii)
-			netstats.push_back(tcp6[ii]);
+			natstats.push_back(tcp6[ii]);
 	for(size_t ii=0;ii<udp4.size();++ii)
-		netstats.push_back(udp4[ii]);
+		natstats.push_back(udp4[ii]);
 	if(ipv6_support)
 		for(size_t ii=0;ii<udp6.size();++ii)
-			netstats.push_back(udp6[ii]);
-	return netstats;
+			natstats.push_back(udp6[ii]);
+	return natstats;
 }

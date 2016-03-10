@@ -2,7 +2,7 @@
 //	FreeBSD 9.2 (g++)
 //	FreeBSD 10.0 (g++)
 
-#include "netstat.hpp"
+#include "natstat.hpp"
 
 #include <cstdlib>
 #include <stdexcept>
@@ -23,12 +23,12 @@
 #include <netinet/in_pcb.h>
 #include <netinet/tcp_var.h>
 
-#include "netstat_util.hpp"
+#include "natstat_util.hpp"
 #include "string_util.hpp"
 
 typedef std::vector<xfile*> xfilep_list_t;
 
-static netstat_list_t netstat_bsd_parse(const std::string& proto)
+static natstat_list_t natstat_bsd_parse(const std::string& proto)
 {
 	size_t xflen=0;
 	if(sysctlbyname("kern.file",NULL,&xflen,NULL,0)==-1)
@@ -37,7 +37,7 @@ static netstat_list_t netstat_bsd_parse(const std::string& proto)
 	xfbuf.resize(xflen);
 	if(sysctlbyname("kern.file",(char*)&xfbuf[0],&xflen,NULL,0)==-1)
 		throw std::runtime_error("error getting data.");
-	netstat_list_t netstats;
+	natstat_list_t natstats;
 	size_t len=0;
 	std::string sysctl_path("");
 	if(proto=="tcp4")
@@ -64,129 +64,129 @@ static netstat_list_t netstat_bsd_parse(const std::string& proto)
 		xinpcb* entry_udp=(xinpcb*)((char*)&buf[0]+ii);
 		if(proto=="tcp4"&&entry_tcp->xt_inp.inp_vflag&INP_IPV4)
 		{
-			netstat_t netstat;
-			netstat.proto=proto;
-			netstat.laddr=u32_to_ipv4(*(uint32_t*)&entry_tcp->xt_inp.inp_laddr);
-			netstat.faddr=u32_to_ipv4(*(uint32_t*)&entry_tcp->xt_inp.inp_faddr);
-			netstat.lport=u16_to_port(entry_tcp->xt_inp.inp_lport);
-			netstat.fport=u16_to_port(entry_tcp->xt_inp.inp_fport);
-			netstat.state="ESTABLISHED";
-			if(netstat.faddr=="0.0.0.0")
-				netstat.state="LISTEN";
-			netstat.pid="-";
+			natstat_t natstat;
+			natstat.proto=proto;
+			natstat.laddr=u32_to_ipv4(*(uint32_t*)&entry_tcp->xt_inp.inp_laddr);
+			natstat.faddr=u32_to_ipv4(*(uint32_t*)&entry_tcp->xt_inp.inp_faddr);
+			natstat.lport=u16_to_port(entry_tcp->xt_inp.inp_lport);
+			natstat.fport=u16_to_port(entry_tcp->xt_inp.inp_fport);
+			natstat.state="ESTABLISHED";
+			if(natstat.faddr=="0.0.0.0")
+				natstat.state="LISTEN";
+			natstat.pid="-";
 			for(size_t ii=0;ii<xflen;ii+=sizeof(xfile))
 			{
 				xfile* xf=(xfile*)((char*)&xfbuf[0]+ii);
 				if((void*)entry_tcp->xt_socket.xso_so==xf->xf_data)
 				{
-					netstat.pid=to_string(xf->xf_pid);
+					natstat.pid=to_string(xf->xf_pid);
 					break;
 				}
 			}
-			if(netstat.pid=="-")
-				netstat.state="TIME_WAIT";
-			netstats.push_back(netstat);
+			if(natstat.pid=="-")
+				natstat.state="TIME_WAIT";
+			natstats.push_back(natstat);
 		}
 		if(proto=="udp4"&&entry_udp->xi_inp.inp_vflag&INP_IPV4)
 		{
-			netstat_t netstat;
-			netstat.proto=proto;
-			netstat.laddr=u32_to_ipv4(*(uint32_t*)&entry_udp->xi_inp.inp_laddr);
-			netstat.faddr="0.0.0.0";
-			netstat.lport=u16_to_port(entry_udp->xi_inp.inp_lport);
-			netstat.fport=0;
-			netstat.state="-";
-			netstat.pid="-";
+			natstat_t natstat;
+			natstat.proto=proto;
+			natstat.laddr=u32_to_ipv4(*(uint32_t*)&entry_udp->xi_inp.inp_laddr);
+			natstat.faddr="0.0.0.0";
+			natstat.lport=u16_to_port(entry_udp->xi_inp.inp_lport);
+			natstat.fport=0;
+			natstat.state="-";
+			natstat.pid="-";
 			for(size_t ii=0;ii<xflen;ii+=sizeof(xfile))
 			{
 				xfile* xf=(xfile*)((char*)&xfbuf[0]+ii);
 				if((void*)entry_udp->xi_socket.xso_so==xf->xf_data)
 				{
-					netstat.pid=to_string(xf->xf_pid);
+					natstat.pid=to_string(xf->xf_pid);
 					break;
 				}
 			}
-			netstats.push_back(netstat);
+			natstats.push_back(natstat);
 		}
 		#if(defined(AF_INET6))
 		if(proto=="tcp6"&&entry_tcp->xt_inp.inp_vflag&INP_IPV6)
 		{
-			netstat_t netstat;
-			netstat.proto=proto;
-			netstat.laddr=u8x16_to_ipv6((uint8_t*)&entry_tcp->xt_inp.in6p_laddr);
-			netstat.faddr=u8x16_to_ipv6((uint8_t*)&entry_tcp->xt_inp.in6p_faddr);
-			netstat.lport=u16_to_port(entry_tcp->xt_inp.inp_lport);
-			netstat.fport=u16_to_port(entry_tcp->xt_inp.inp_fport);
-			netstat.state="ESTABLISHED";
-			if(netstat.faddr=="0000:0000:0000:0000:0000:0000:0000:0000")
-				netstat.state="LISTEN";
-			netstat.pid="-";
+			natstat_t natstat;
+			natstat.proto=proto;
+			natstat.laddr=u8x16_to_ipv6((uint8_t*)&entry_tcp->xt_inp.in6p_laddr);
+			natstat.faddr=u8x16_to_ipv6((uint8_t*)&entry_tcp->xt_inp.in6p_faddr);
+			natstat.lport=u16_to_port(entry_tcp->xt_inp.inp_lport);
+			natstat.fport=u16_to_port(entry_tcp->xt_inp.inp_fport);
+			natstat.state="ESTABLISHED";
+			if(natstat.faddr=="0000:0000:0000:0000:0000:0000:0000:0000")
+				natstat.state="LISTEN";
+			natstat.pid="-";
 			for(size_t ii=0;ii<xflen;ii+=sizeof(xfile))
 			{
 				xfile* xf=(xfile*)((char*)&xfbuf[0]+ii);
 
 				if((void*)entry_tcp->xt_socket.xso_so==xf->xf_data)
 				{
-					netstat.pid=to_string(xf->xf_pid);
+					natstat.pid=to_string(xf->xf_pid);
 					break;
 				}
 			}
-			if(netstat.pid=="-")
-				netstat.state="TIME_WAIT";
-			netstat.laddr=ipv6_prettify(netstat.laddr);
-			netstat.faddr=ipv6_prettify(netstat.faddr);
-			netstats.push_back(netstat);
+			if(natstat.pid=="-")
+				natstat.state="TIME_WAIT";
+			natstat.laddr=ipv6_prettify(natstat.laddr);
+			natstat.faddr=ipv6_prettify(natstat.faddr);
+			natstats.push_back(natstat);
 		}
 		if(proto=="udp6"&&entry_udp->xi_inp.inp_vflag&INP_IPV6)
 		{
-			netstat_t netstat;
-			netstat.proto=proto;
-			netstat.laddr=u8x16_to_ipv6((uint8_t*)&entry_udp->xi_inp.in6p_laddr);
-			netstat.faddr="0000:0000:0000:0000:0000:0000:0000:0000";
-			netstat.lport=u16_to_port(entry_udp->xi_inp.inp_lport);
-			netstat.fport=0;
-			netstat.state="-";
-			netstat.pid="-";
+			natstat_t natstat;
+			natstat.proto=proto;
+			natstat.laddr=u8x16_to_ipv6((uint8_t*)&entry_udp->xi_inp.in6p_laddr);
+			natstat.faddr="0000:0000:0000:0000:0000:0000:0000:0000";
+			natstat.lport=u16_to_port(entry_udp->xi_inp.inp_lport);
+			natstat.fport=0;
+			natstat.state="-";
+			natstat.pid="-";
 			for(size_t ii=0;ii<xflen;ii+=sizeof(xfile))
 			{
 				xfile* xf=(xfile*)((char*)&xfbuf[0]+ii);
 
 				if((void*)entry_udp->xi_socket.xso_so==xf->xf_data)
 				{
-					netstat.pid=to_string(xf->xf_pid);
+					natstat.pid=to_string(xf->xf_pid);
 					break;
 				}
 			}
-			netstat.laddr=ipv6_prettify(netstat.laddr);
-			netstat.faddr=ipv6_prettify(netstat.faddr);
-			netstats.push_back(netstat);
+			natstat.laddr=ipv6_prettify(natstat.laddr);
+			natstat.faddr=ipv6_prettify(natstat.faddr);
+			natstats.push_back(natstat);
 		}
 		#endif
 		ii+=((xinpgen*)((char*)&buf[0]+ii))->xig_len;
 	}
-	return netstats;
+	return natstats;
 }
 
-netstat_list_t netstat()
+natstat_list_t natstat()
 {
-	netstat_list_t netstats;
-	netstat_list_t tcp4=netstat_bsd_parse("tcp4");
-	netstat_list_t udp4=netstat_bsd_parse("udp4");
+	natstat_list_t natstats;
+	natstat_list_t tcp4=natstat_bsd_parse("tcp4");
+	natstat_list_t udp4=natstat_bsd_parse("udp4");
 	#if(defined(AF_INET6))
-	netstat_list_t tcp6=netstat_bsd_parse("tcp6");
-	netstat_list_t udp6=netstat_bsd_parse("udp6");
+	natstat_list_t tcp6=natstat_bsd_parse("tcp6");
+	natstat_list_t udp6=natstat_bsd_parse("udp6");
 	#endif
 	for(size_t ii=0;ii<tcp4.size();++ii)
-		netstats.push_back(tcp4[ii]);
+		natstats.push_back(tcp4[ii]);
 	#if(defined(AF_INET6))
 	for(size_t ii=0;ii<tcp6.size();++ii)
-		netstats.push_back(tcp6[ii]);
+		natstats.push_back(tcp6[ii]);
 	#endif
 	for(size_t ii=0;ii<udp4.size();++ii)
-		netstats.push_back(udp4[ii]);
+		natstats.push_back(udp4[ii]);
 	#if(defined(AF_INET6))
 	for(size_t ii=0;ii<udp6.size();++ii)
-		netstats.push_back(udp6[ii]);
+		natstats.push_back(udp6[ii]);
 	#endif
-	return netstats;
+	return natstats;
 }

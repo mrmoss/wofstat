@@ -1,12 +1,9 @@
-Thesis
-Currently yields a uniform network connection output for Linux, Windows, BSD, and Solaris (11+).
-
-Requires C++ compiler.
+Not Antother Netstat - A universal netstat program for Linux, Windows, BSD, OSX, and Solaris.
 
 Building:
 
-	make linux|solaris|bsd|osx
+	make
 
 For Windows:
 
-	Mingw does not contain the newest Windows headers. On XP SP3+ you must compile using VS (sadly).
+	Mingw does not contain the newest Windows headers. On XP SP3+ you must compile using VS or the Cygwin version of g++ (sadly).

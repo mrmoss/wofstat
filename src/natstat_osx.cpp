@@ -3,13 +3,13 @@
 
 //TODO: Check memory allocs and frees, cleanup, sort tcp and udp output, make errors better.
 
-#include "netstat.hpp"
+#include "natstat.hpp"
 
 #include <sys/sysctl.h>
 #include <iostream>
 #include <libproc.h>
 
-#include "netstat_util.hpp"
+#include "natstat_util.hpp"
 #include "string_util.hpp"
 
 static const size_t states_size=12;
@@ -29,9 +29,9 @@ static const std::string states[states_size]=
 	"RESERVED"
 };
 
-netstat_list_t netstat()
+natstat_list_t natstat()
 {
-	netstat_list_t netstats;
+	natstat_list_t natstats;
 	int name[]={CTL_KERN,KERN_PROC,KERN_PROC_ALL};
 	size_t num_procs=0;
 	if(sysctl(name,3,NULL,&num_procs,NULL,0)!=0)
@@ -78,48 +78,48 @@ netstat_list_t netstat()
 				#endif
 				if(is_inet)
 				{
-						netstat_t netstat;
-						netstat.state="-";
-						netstat.pid=std::to_string(procs[ii].kp_proc.p_pid);
+						natstat_t natstat;
+						natstat.state="-";
+						natstat.pid=std::to_string(procs[ii].kp_proc.p_pid);
 						if(si.psi.soi_type==SOCK_STREAM)
 						{
-							netstat.proto="tcp";
-							netstat.state=states[si.psi.soi_proto.pri_tcp.tcpsi_state];
+							natstat.proto="tcp";
+							natstat.state=states[si.psi.soi_proto.pri_tcp.tcpsi_state];
 						}
 						else if(si.psi.soi_type==SOCK_DGRAM)
 						{
-							netstat.proto="udp";
+							natstat.proto="udp";
 						}
-						if(netstat.proto.size()>0)
+						if(natstat.proto.size()>0)
 						{
 							if(is_ipv6)
 							{
-								netstat.proto+="6";
-								netstat.laddr=u8x16_to_ipv6((uint8_t*)&si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_laddr.ina_6);
-								netstat.faddr=u8x16_to_ipv6((uint8_t*)&si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_faddr.ina_6);
+								natstat.proto+="6";
+								natstat.laddr=u8x16_to_ipv6((uint8_t*)&si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_laddr.ina_6);
+								natstat.faddr=u8x16_to_ipv6((uint8_t*)&si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_faddr.ina_6);
 							}
 							else
 							{
-								netstat.proto+="4";
-								netstat.laddr=u32_to_ipv4(si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_laddr.ina_46.i46a_addr4.s_addr);
-								netstat.faddr=u32_to_ipv4(si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_faddr.ina_46.i46a_addr4.s_addr);
+								natstat.proto+="4";
+								natstat.laddr=u32_to_ipv4(si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_laddr.ina_46.i46a_addr4.s_addr);
+								natstat.faddr=u32_to_ipv4(si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_faddr.ina_46.i46a_addr4.s_addr);
 							}
 							if(si.psi.soi_type==SOCK_DGRAM)
 							{
-								netstat.lport=u16_to_port(si.psi.soi_proto.pri_in.insi_lport);
-								netstat.fport=u16_to_port(si.psi.soi_proto.pri_in.insi_fport);
+								natstat.lport=u16_to_port(si.psi.soi_proto.pri_in.insi_lport);
+								natstat.fport=u16_to_port(si.psi.soi_proto.pri_in.insi_fport);
 							}
 							else
 							{
-								netstat.lport=u16_to_port(si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_lport);
-								netstat.fport=u16_to_port(si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_fport);
+								natstat.lport=u16_to_port(si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_lport);
+								natstat.fport=u16_to_port(si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_fport);
 							}
-							if(netstat.proto.substr(3,1)=="6")
+							if(natstat.proto.substr(3,1)=="6")
 							{
-								netstat.laddr=ipv6_prettify(netstat.laddr);
-								netstat.faddr=ipv6_prettify(netstat.faddr);
+								natstat.laddr=ipv6_prettify(natstat.laddr);
+								natstat.faddr=ipv6_prettify(natstat.faddr);
 							}
-							netstats.push_back(netstat);
+							natstats.push_back(natstat);
 						}
 				}
 			}
@@ -127,5 +127,5 @@ netstat_list_t netstat()
 		free(fds);
 	}
 	free(procs);
-	return netstats;
+	return natstats;
 }

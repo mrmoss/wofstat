@@ -1,11 +1,11 @@
-#ifndef NETSTAT_HPP
-#define NETSTAT_HPP
+#ifndef NATSTAT_HPP
+#define NATSTAT_HPP
 
 #include <stdint.h>
 #include <string>
 #include <vector>
 
-struct netstat_t
+struct natstat_t
 {
 	std::string proto;
 	std::string laddr;
@@ -16,8 +16,8 @@ struct netstat_t
 	std::string pid;
 };
 
-typedef std::vector<netstat_t> netstat_list_t;
+typedef std::vector<natstat_t> natstat_list_t;
 
-netstat_list_t netstat();
+natstat_list_t natstat();
 
 #endif

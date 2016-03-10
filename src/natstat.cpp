@@ -1,7 +1,7 @@
 #include <cstdlib>
 #include <iostream>
-#include "netstat.hpp"
-#include "netstat_util.hpp"
+#include "natstat.hpp"
+#include "natstat_util.hpp"
 #include "string_util.hpp"
 #include <stdexcept>
 
@@ -10,10 +10,9 @@ void show_help(const int return_code)
 	std::ostream* ostr=&std::cout;
 	if(return_code!=0)
 		ostr=&std::cerr;
-	*ostr<<"  Usage:  ./mikestat [-j][-h][--help]"<<std::endl;
-	*ostr<<"  --help  Show help menu."<<std::endl;
-	*ostr<<"  -h      Print in human readable format (default)."<<std::endl;
-	*ostr<<"  -j      Print in JSON format."<<std::endl;
+	*ostr<<"  Usage:  ./natstat [--help][h][--wof][-w]"<<std::endl;
+	*ostr<<"  --help, -h  Show help menu."<<std::endl;
+	*ostr<<"  --wof, -w   Print in wof format."<<std::endl;
 	exit(return_code);
 }
 
@@ -32,11 +31,11 @@ int main(int argc,char* argv[])
 			else
 				throw std::runtime_error("Unknown cli argument \""+cli+"\".");
 		}
-		netstat_list_t netstats(netstat());
+		natstat_list_t natstats(natstat());
 		if(human_readable)
-			print_human(netstats);
+			print_human(natstats);
 		else
-			print_wof(netstats);
+			print_wof(natstats);
 	}
 	catch(std::runtime_error& error)
 	{

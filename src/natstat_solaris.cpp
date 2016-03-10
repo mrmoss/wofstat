@@ -1,7 +1,7 @@
 //Tested on:
 //	Solaris 11.2 (g++)
 
-#include "netstat.hpp"
+#include "natstat.hpp"
 
 #include <cstdlib>
 #include <stdexcept>
@@ -24,7 +24,7 @@
 #include <sys/tihdr.h>
 #include <inet/mib2.h>
 
-#include "netstat_util.hpp"
+#include "natstat_util.hpp"
 #include "string_util.hpp"
 
 class buffer_t
@@ -92,25 +92,25 @@ static std::string state_int_to_string(const uint32_t state)
 	return "UNKNOWN";
 }
 
-netstat_list_t netstat()
+natstat_list_t natstat()
 {
 	int fd=open("/dev/arp",O_RDWR);
 	if(fd==-1)
-		throw std::runtime_error("netstat_solaris() - Could not find /dev/arp.");
+		throw std::runtime_error("natstat_solaris() - Could not find /dev/arp.");
 	if(ioctl(fd,I_PUSH,"tcp")==-1)
-		throw std::runtime_error("netstat_solaris() - Could not push module tcp into /dev/arp.");
+		throw std::runtime_error("natstat_solaris() - Could not push module tcp into /dev/arp.");
 	if(ioctl(fd,I_PUSH,"udp")==-1)
-		throw std::runtime_error("netstat_solaris() - Could not push module udp into /dev/arp.");
+		throw std::runtime_error("natstat_solaris() - Could not push module udp into /dev/arp.");
 	request_t request;
 	strbuf buf;
 	buf.len=sizeof(request);
 	buf.buf=(char*)&request;
 	if(putmsg(fd,&buf,NULL,0)<0)
-		throw std::runtime_error("netstat_solaris() - putmsg failed for /dev/arp.");
-	netstat_list_t tcp4;
-	netstat_list_t tcp6;
-	netstat_list_t udp4;
-	netstat_list_t udp6;
+		throw std::runtime_error("natstat_solaris() - putmsg failed for /dev/arp.");
+	natstat_list_t tcp4;
+	natstat_list_t tcp6;
+	natstat_list_t udp4;
+	natstat_list_t udp6;
 	while(true)
 	{
 		strbuf buf2;
@@ -120,15 +120,15 @@ netstat_list_t netstat()
 		buf2.buf=(char*)&reply;
 		int ret=getmsg(fd,&buf2,NULL,&flags);
 		if(ret<0)
-			throw std::runtime_error("netstat_solaris() - getmsg failed for /dev/arp.");
+			throw std::runtime_error("natstat_solaris() - getmsg failed for /dev/arp.");
 		if(ret!=MOREDATA)
 			break;
 		if(reply.ack_header.PRIM_type!=T_OPTMGMT_ACK)
-			throw std::runtime_error("netstat_solaris() - Invalid acknowledgement header primative type from getmsg.");
+			throw std::runtime_error("natstat_solaris() - Invalid acknowledgement header primative type from getmsg.");
 		if((size_t)buf2.len<sizeof(reply.ack_header))
-			throw std::runtime_error("netstat_solaris() - Invalid buffer length received from getmsg.");
+			throw std::runtime_error("natstat_solaris() - Invalid buffer length received from getmsg.");
 		if((size_t)reply.ack_header.OPT_length<sizeof(reply.opt_header))
-			throw std::runtime_error("netstat_solaris() - Invalid option length received from getmsg.");
+			throw std::runtime_error("natstat_solaris() - Invalid option length received from getmsg.");
 		std::vector<uint8_t> data;
 		data.resize(reply.opt_header.len);
 		buf2.maxlen=reply.opt_header.len;
@@ -141,19 +141,19 @@ netstat_list_t netstat()
 				for(int ii=0;ii<buf2.len;ii+=sizeof(mib2_tcpConnEntry_t))
 				{
 					mib2_tcpConnEntry_t* entry=(mib2_tcpConnEntry_t*)((char*)&data[0]+ii);
-					netstat_t netstat;
-					netstat.proto="tcp4";
-					netstat.laddr=u32_to_ipv4(entry->tcpConnLocalAddress);
-					netstat.faddr=u32_to_ipv4(entry->tcpConnRemAddress);
-					netstat.lport=u16_to_port(htons(entry->tcpConnLocalPort));
-					netstat.fport=u16_to_port(htons(entry->tcpConnRemPort));
-					netstat.state=state_int_to_string(entry->tcpConnState);
-					netstat.pid="-";
+					natstat_t natstat;
+					natstat.proto="tcp4";
+					natstat.laddr=u32_to_ipv4(entry->tcpConnLocalAddress);
+					natstat.faddr=u32_to_ipv4(entry->tcpConnRemAddress);
+					natstat.lport=u16_to_port(htons(entry->tcpConnLocalPort));
+					natstat.fport=u16_to_port(htons(entry->tcpConnRemPort));
+					natstat.state=state_int_to_string(entry->tcpConnState);
+					natstat.pid="-";
 					#if(defined(NEWSOLARIS))
-					if(netstat.state!="TIME_WAIT")
-						netstat.pid=to_string(entry->tcpConnCreationProcess);
+					if(natstat.state!="TIME_WAIT")
+						natstat.pid=to_string(entry->tcpConnCreationProcess);
 					#endif
-					tcp4.push_back(netstat);
+					tcp4.push_back(natstat);
 				}
 			}
 			#if(defined(MIB2_TCP6))
@@ -163,21 +163,21 @@ netstat_list_t netstat()
 					{
 						mib2_tcp6ConnEntry_t* entry=(mib2_tcp6ConnEntry_t*)((char*)&data[0]+ii);
 
-						netstat_t netstat;
-						netstat.proto="tcp6";
-						netstat.laddr=u8x16_to_ipv6(entry->tcp6ConnLocalAddress.s6_addr);
-						netstat.faddr=u8x16_to_ipv6(entry->tcp6ConnRemAddress.s6_addr);
-						netstat.lport=u16_to_port(htons(entry->tcp6ConnLocalPort));
-						netstat.fport=u16_to_port(htons(entry->tcp6ConnRemPort));
-						netstat.state=state_int_to_string(entry->tcp6ConnState);
-						netstat.pid="-";
+						natstat_t natstat;
+						natstat.proto="tcp6";
+						natstat.laddr=u8x16_to_ipv6(entry->tcp6ConnLocalAddress.s6_addr);
+						natstat.faddr=u8x16_to_ipv6(entry->tcp6ConnRemAddress.s6_addr);
+						natstat.lport=u16_to_port(htons(entry->tcp6ConnLocalPort));
+						natstat.fport=u16_to_port(htons(entry->tcp6ConnRemPort));
+						natstat.state=state_int_to_string(entry->tcp6ConnState);
+						natstat.pid="-";
 						#if(defined(NEWSOLARIS))
-						if(netstat.state!="TIME_WAIT")
-							netstat.pid=to_string(entry->tcp6ConnCreationProcess);
+						if(natstat.state!="TIME_WAIT")
+							natstat.pid=to_string(entry->tcp6ConnCreationProcess);
 						#endif
-						netstat.laddr=ipv6_prettify(netstat.laddr);
-						netstat.faddr=ipv6_prettify(netstat.faddr);
-						tcp6.push_back(netstat);
+						natstat.laddr=ipv6_prettify(natstat.laddr);
+						natstat.faddr=ipv6_prettify(natstat.faddr);
+						tcp6.push_back(natstat);
 					}
 				}
 			#endif
@@ -186,19 +186,19 @@ netstat_list_t netstat()
 				for(int ii=0;ii<buf2.len;ii+=sizeof(mib2_udpEntry_t))
 				{
 					mib2_udpEntry_t* entry=(mib2_udpEntry_t*)((char*)&data[0]+ii);
-					netstat_t netstat;
-					netstat.proto="udp4";
-					netstat.laddr=u32_to_ipv4(entry->udpLocalAddress);
-					netstat.faddr="0.0.0.0";
-					netstat.lport=u16_to_port(htons(entry->udpLocalPort));
-					netstat.fport=0;
-					netstat.state="-";
-					netstat.pid="-";
+					natstat_t natstat;
+					natstat.proto="udp4";
+					natstat.laddr=u32_to_ipv4(entry->udpLocalAddress);
+					natstat.faddr="0.0.0.0";
+					natstat.lport=u16_to_port(htons(entry->udpLocalPort));
+					natstat.fport=0;
+					natstat.state="-";
+					natstat.pid="-";
 					#if(defined(NEWSOLARIS))
-					if(netstat.state!="TIME_WAIT")
-						netstat.pid=to_string(entry->udpCreationProcess);
+					if(natstat.state!="TIME_WAIT")
+						natstat.pid=to_string(entry->udpCreationProcess);
 					#endif
-					udp4.push_back(netstat);
+					udp4.push_back(natstat);
 				}
 			}
 			#if(defined(MIB2_UDP6))
@@ -207,34 +207,34 @@ netstat_list_t netstat()
 					for(int ii=0;ii<buf2.len;ii+=sizeof(mib2_udp6Entry_t))
 					{
 						mib2_udp6Entry_t* entry=(mib2_udp6Entry_t*)((char*)&data[0]+ii);
-						netstat_t netstat;
-						netstat.proto="udp6";
-						netstat.laddr=u8x16_to_ipv6(entry->udp6LocalAddress.s6_addr);
-						netstat.faddr="0000:0000:0000:0000:0000:0000:0000:0000";
-						netstat.lport=u16_to_port(htons(entry->udp6LocalPort));
-						netstat.fport=0;
-						netstat.state="-";
-						netstat.pid="-";
+						natstat_t natstat;
+						natstat.proto="udp6";
+						natstat.laddr=u8x16_to_ipv6(entry->udp6LocalAddress.s6_addr);
+						natstat.faddr="0000:0000:0000:0000:0000:0000:0000:0000";
+						natstat.lport=u16_to_port(htons(entry->udp6LocalPort));
+						natstat.fport=0;
+						natstat.state="-";
+						natstat.pid="-";
 						#if(defined(NEWSOLARIS))
-						if(netstat.state!="TIME_WAIT")
-							netstat.pid=to_string(entry->udp6CreationProcess);
+						if(natstat.state!="TIME_WAIT")
+							natstat.pid=to_string(entry->udp6CreationProcess);
 						#endif
-						netstat.laddr=ipv6_prettify(netstat.laddr);
-						netstat.faddr=ipv6_prettify(netstat.faddr);
-						udp6.push_back(netstat);
+						natstat.laddr=ipv6_prettify(natstat.laddr);
+						natstat.faddr=ipv6_prettify(natstat.faddr);
+						udp6.push_back(natstat);
 					}
 				}
 			#endif
 		}
 	}
-	netstat_list_t netstats;
+	natstat_list_t natstats;
 	for(size_t ii=0;ii<tcp4.size();++ii)
-			netstats.push_back(tcp4[ii]);
+			natstats.push_back(tcp4[ii]);
 	for(size_t ii=0;ii<tcp6.size();++ii)
-			netstats.push_back(tcp6[ii]);
+			natstats.push_back(tcp6[ii]);
 	for(size_t ii=0;ii<udp4.size();++ii)
-			netstats.push_back(udp4[ii]);
+			natstats.push_back(udp4[ii]);
 	for(size_t ii=0;ii<udp6.size();++ii)
-			netstats.push_back(udp6[ii]);
-	return netstats;
+			natstats.push_back(udp6[ii]);
+	return natstats;
 }

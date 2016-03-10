@@ -32,57 +32,43 @@ static const std::string states[states_size]=
 netstat_list_t netstat()
 {
 	netstat_list_t netstats;
-
 	int name[]={CTL_KERN,KERN_PROC,KERN_PROC_ALL};
 	size_t num_procs=0;
-
 	if(sysctl(name,3,NULL,&num_procs,NULL,0)!=0)
 		throw std::runtime_error("ERROR 0");
-
 	kinfo_proc* procs=(kinfo_proc*)malloc(num_procs);
 	if(procs==NULL)
 		throw std::runtime_error("ERROR 0");
-
 	if(sysctl(name,3,procs,&num_procs,NULL,0)!=0)
 	{
 		free(procs);
 		throw std::runtime_error("ERROR 0");
 	}
-
 	num_procs=num_procs/sizeof(struct kinfo_proc);
-
 	for(size_t ii=0;ii<num_procs;++ii)
 	{
 		int num_fds=proc_pidinfo(procs[ii].kp_proc.p_pid,PROC_PIDLISTFDS,0,NULL,0);
-
 		if(num_fds<=0)
 			continue;
-
 		proc_fdinfo* fds=(proc_fdinfo*)malloc(num_fds);
 		if(fds==NULL)
 			continue;
-
 		num_fds=proc_pidinfo(procs[ii].kp_proc.p_pid,PROC_PIDLISTFDS,0,fds,num_fds);
 		if(num_fds<0)
 		{
 			free(fds);
 			continue;
 		}
-
 		num_fds=num_fds/PROC_PIDLISTFD_SIZE;
-
 		for(size_t jj=0;jj<num_fds;++jj)
 		{
 			if(fds[jj].proc_fdtype==PROX_FDTYPE_SOCKET)
 			{
 				socket_fdinfo si;
-
 				if(proc_pidfdinfo(procs[ii].kp_proc.p_pid,fds[jj].proc_fd,PROC_PIDFDSOCKETINFO,&si,sizeof(si))<=0)
 					continue;
-
 				bool is_inet=(si.psi.soi_family==AF_INET);
 				bool is_ipv6=false;
-
 				#if(defined(AF_INET6))
 					if(si.psi.soi_family==AF_INET6)
 					{
@@ -90,11 +76,9 @@ netstat_list_t netstat()
 						is_ipv6=true;
 					}
 				#endif
-
 				if(is_inet)
 				{
 						netstat_t netstat;
-
 						netstat.state="-";
 						netstat.pid=std::to_string(procs[ii].kp_proc.p_pid);
 						if(si.psi.soi_type==SOCK_STREAM)
@@ -102,10 +86,10 @@ netstat_list_t netstat()
 							netstat.proto="tcp";
 							netstat.state=states[si.psi.soi_proto.pri_tcp.tcpsi_state];
 						}
-
 						else if(si.psi.soi_type==SOCK_DGRAM)
+						{
 							netstat.proto="udp";
-
+						}
 						if(netstat.proto.size()>0)
 						{
 							if(is_ipv6)
@@ -120,7 +104,6 @@ netstat_list_t netstat()
 								netstat.laddr=u32_to_ipv4(si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_laddr.ina_46.i46a_addr4.s_addr);
 								netstat.faddr=u32_to_ipv4(si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_faddr.ina_46.i46a_addr4.s_addr);
 							}
-
 							if(si.psi.soi_type==SOCK_DGRAM)
 							{
 								netstat.lport=u16_to_port(si.psi.soi_proto.pri_in.insi_lport);
@@ -131,17 +114,18 @@ netstat_list_t netstat()
 								netstat.lport=u16_to_port(si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_lport);
 								netstat.fport=u16_to_port(si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_fport);
 							}
-
+							if(netstat.proto.substr(3,1)=="6")
+							{
+								netstat.laddr=ipv6_prettify(netstat.laddr);
+								netstat.faddr=ipv6_prettify(netstat.faddr);
+							}
 							netstats.push_back(netstat);
 						}
 				}
 			}
 		}
-
 		free(fds);
 	}
-
 	free(procs);
-
 	return netstats;
 }

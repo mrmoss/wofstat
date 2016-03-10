@@ -11,6 +11,8 @@ typedef std::vector<list_t> table_t;
 typedef std::pair<std::string,std::string> lookup_t;
 typedef std::vector<lookup_t> lookup_list_t;
 
+std::string ipv6_prettify(std::string addr);
+
 std::string u32_to_ipv4(const uint32_t address);
 std::string hex_to_ipv4(const std::string& hex);
 
@@ -22,7 +24,6 @@ uint16_t hex_to_port(const std::string& hex);
 
 #if(defined(_WIN32)||defined(__CYGWIN__))
 	#include <Windows.h>
-
 	uint16_t dword_to_port(const DWORD port);
 #endif
 

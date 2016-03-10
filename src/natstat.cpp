@@ -26,14 +26,10 @@ int main(int argc,char* argv[])
 				show_help();
 				return 1;
 			}
-			else if(cli=="--wof"||cli=="-w")
-			{
+			if(cli=="--wof"||cli=="-w")
 				human_readable=false;
-			}
 			else
-			{
 				throw std::runtime_error("Unknown cli argument \""+cli+"\".");
-			}
 		}
 		natstat_list_t natstats(natstat());
 		if(human_readable)

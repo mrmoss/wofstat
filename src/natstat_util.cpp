@@ -50,10 +50,10 @@ void print_human(const natstat_list_t& natstats)
 	{
 		if(natstats[ii].proto.size()+pad>cols[0])
 			cols[0]=natstats[ii].proto.size()+pad;
-		if(natstats[ii].laddr.size()+7+pad>cols[1])
-			cols[1]=natstats[ii].laddr.size()+7+pad;
-		if(natstats[ii].faddr.size()+7>cols[2])
-			cols[2]=natstats[ii].faddr.size()+7+pad;
+		if(natstats[ii].laddr.size()+8+pad>cols[1])
+			cols[1]=natstats[ii].laddr.size()+8+pad;
+		if(natstats[ii].faddr.size()+8>cols[2])
+			cols[2]=natstats[ii].faddr.size()+8+pad;
 		if(natstats[ii].state.size()+pad>cols[3])
 			cols[3]=natstats[ii].state.size()+pad;
 		if(natstats[ii].pid.size()+pad>cols[4])

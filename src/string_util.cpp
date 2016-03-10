@@ -39,6 +39,10 @@ std::string ipv6_prettify(std::string addr)
 			break;
 		addr=copy;
 	}
+	if(addr.substr(0,1)==":"&&addr.substr(1,1)!=":")
+		addr.erase(0,1);
+	if(addr.substr(addr.size()-1,1)==":"&&addr.substr(addr.size()-2,1)!=":")
+		addr.erase(addr.size()-1,1);
 	return addr;
 }
 

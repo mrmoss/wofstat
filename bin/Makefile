@@ -1,7 +1,7 @@
 CXX=g++
 OPTS=-O
 CFLAGS=$(OPTS) -Wall
-SRC=src
+SRC=../src
 LIB=
 
 WOFSTAT_SRC=$(SRC)/main.cpp $(SRC)/wofstat.cpp $(SRC)/string_util.cpp

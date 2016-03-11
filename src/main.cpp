@@ -15,7 +15,7 @@ int main(int argc,char* argv[])
 {
 	try
 	{
-		std::cerr<<"Not Another Netstat"<<std::endl;
+		std::cerr<<"Walls of Fire - Not Another Netstat"<<std::endl;
 		bool human_readable=true;
 		for(int ii=1;ii<argc;++ii)
 		{

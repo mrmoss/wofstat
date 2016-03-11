@@ -4,35 +4,35 @@ CFLAGS=$(OPTS) -Wall
 SRC=src
 LIB=
 
-NATSTAT_SRC=$(SRC)/natstat.cpp $(SRC)/natstat_util.cpp $(SRC)/string_util.cpp
+WOFSTAT_SRC=$(SRC)/main.cpp $(SRC)/wofstat.cpp $(SRC)/string_util.cpp
 
 ifeq ($(OS),Windows_NT)
-	NATSTAT_SRC+=$(SRC)/natstat_windows.cpp
+	WOFSTAT_SRC+=$(SRC)/windows.cpp
 	LIB+=-lIPHlpApi -lWs2_32
 else
 	os=$(shell uname -s)
 	ifeq ($(os),Linux)
-		NATSTAT_SRC+=$(SRC)/natstat_linux.cpp
+		WOFSTAT_SRC+=$(SRC)/linux.cpp
 	endif
 	ifeq ($(os),Darwin)
-		NATSTAT_SRC+=$(SRC)/natstat_osx.cpp
+		WOFSTAT_SRC+=$(SRC)/osx.cpp
 	endif
 	ifeq ($(os),SunOS)
-		NATSTAT_SRC+=$(SRC)/natstat_solaris.cpp
+		WOFSTAT_SRC+=$(SRC)/solaris.cpp
 
 		ifeq ($(shell if [ $(shell uname -r|cut	-d'.' -f2) -ge 11 ];then echo 'new';else echo 'old';fi),new)
 			CFLAGS+=-D NEWSOLARIS
 		endif
 	endif
 	ifeq ($(os),$(filter $(os),FreeBSD GNU/kFreeBSD NetBSD OpenBSD))
-		NATSTAT_SRC+=$(SRC)/natstat_bsd.cpp
+		WOFSTAT_SRC+=$(SRC)/bsd.cpp
 	endif
 endif
 
-all: natstat
+all: wofstat
 
-natstat: $(NATSTAT_SRC)
-	$(CXX) $(CFLAGS) $(NATSTAT_SRC) $(LIB) -o natstat
+wofstat: $(WOFSTAT_SRC)
+	$(CXX) $(CFLAGS) $(WOFSTAT_SRC) $(LIB) -o wofstat
 
 clean:
-	- rm -f natstat natstat.exe
+	- rm -f wofstat wofstat.exe

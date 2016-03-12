@@ -16,5 +16,4 @@ Why not give wofstat a shot?
 
 Note on Solaris:
 
-	It is literally easier to upgrade from 10 to 11 then it is to get good networking information out of 
-it...
+	It is literally easier to upgrade from 10 to 11 then it is to get good networking information out of it...

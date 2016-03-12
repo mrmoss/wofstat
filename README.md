@@ -7,6 +7,7 @@ Walls of Fire Stat - A universal netstat program for Linux, Windows, BSD, OSX, a
 Why not give wofstat a shot?
 
 	I know what you're thinking, not another *stat program...
+
 	Is it easy to use?
 		./wofstat
 

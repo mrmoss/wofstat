@@ -11,7 +11,10 @@ Why not give wofstat a shot?
 	Is it easy to use?
 		./wofstat
 
-For Windows:
+	It can also be used in conjunction with wof:
+		./wofstat -w
 
-	Mingw does not contain the newest Windows headers.
-	On XP SP3+ you must compile using VS or the Cygwin version of g++ (sadly).
+Note on Solaris:
+
+	It is literally easier to upgrade from 10 to 11 then it is to get good networking information out of 
+it...

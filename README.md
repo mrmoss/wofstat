@@ -1,4 +1,4 @@
-Walls of Fire Stat - A universal netstat program for Linux, Windows, BSD, OSX, and Solaris.
+Walls of Fire Stat - Universal netstat program for Linux, Windows, BSD, OSX, and Solaris.
 
 	Tired of all the different netstat programs out there?
 	Tired of remember if it's -tulpan, -bano, -an -f inet?

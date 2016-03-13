@@ -15,7 +15,7 @@ int main(int argc,char* argv[])
 {
 	try
 	{
-		std::cerr<<"Walls of Fire - A universal netstat program."<<std::endl;
+		std::cerr<<"Walls of Fire - Universal netstat program for Linux, Windows, BSD, OSX, and Solaris."<<std::endl;
 		bool human_readable=true;
 		for(int ii=1;ii<argc;++ii)
 		{

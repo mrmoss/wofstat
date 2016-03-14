@@ -23,7 +23,7 @@ void print_human(const wofstat_t& wofstat,std::vector<size_t> cols)
 	if(V6)
 		lstr<<"["<<wofstat.laddr<<"]:"<<wofstat.lport;
 	else
-		lstr<<wofstat.laddr<<":"<<wofstat.fport;
+		lstr<<wofstat.laddr<<":"<<wofstat.lport;
 	std::ostringstream rstr;
 	if(V6)
 		rstr<<"["<<wofstat.faddr<<"]:"<<wofstat.fport;

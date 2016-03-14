@@ -60,7 +60,7 @@ void print_human(const wofstat_list_t& wofstats)
 		if(wofstats[ii].pid.size()+pad>cols[4])
 			cols[4]=wofstats[ii].pid.size()+pad;
 	}
-	std::cout<<
+	std::cerr<<
 		std::setw(cols[0])<<"proto"<<
 		std::setw(cols[1])<<"local address"<<
 		std::setw(cols[2])<<"foreign address"<<

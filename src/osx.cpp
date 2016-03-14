@@ -96,6 +96,8 @@ wofstat_list_t wofstat()
 								wofstat.proto+="6";
 								wofstat.laddr=u8x16_to_ipv6((uint8_t*)&si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_laddr.ina_6);
 								wofstat.faddr=u8x16_to_ipv6((uint8_t*)&si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_faddr.ina_6);
+								wofstat.laddr=ipv6_prettify(wofstat.laddr);
+								wofstat.faddr=ipv6_prettify(wofstat.faddr);
 							}
 							else
 							{
@@ -112,11 +114,6 @@ wofstat_list_t wofstat()
 							{
 								wofstat.lport=u16_to_port(si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_lport);
 								wofstat.fport=u16_to_port(si.psi.soi_proto.pri_tcp.tcpsi_ini.insi_fport);
-							}
-							if(wofstat.proto.substr(3,1)=="6")
-							{
-								wofstat.laddr=ipv6_prettify(wofstat.laddr);
-								wofstat.faddr=ipv6_prettify(wofstat.faddr);
 							}
 							wofstats.push_back(wofstat);
 						}

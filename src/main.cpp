@@ -6,7 +6,7 @@
 
 void show_help()
 {
-	std::cerr<<"  Usage:  ./wofstat [--help][h][--wof][-w]"<<std::endl;
+	std::cerr<<"  Usage:  ./wofstat [--help][-h][--wof][-w]"<<std::endl;
 	std::cerr<<"  --help, -h  Show help menu."<<std::endl;
 	std::cerr<<"  --wof, -w   Print in wof format."<<std::endl;
 }

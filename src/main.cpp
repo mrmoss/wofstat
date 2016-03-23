@@ -6,9 +6,9 @@
 
 void show_help()
 {
-	std::cerr<<"  Usage:  ./wofstat [--help][-h][--wof][-w]"<<std::endl;
-	std::cerr<<"  --help, -h  Show help menu."<<std::endl;
-	std::cerr<<"  --wof, -w   Print in wof format."<<std::endl;
+	std::cerr<<"  Usage:  ./wofstat [--help][--wof][-w]"<<std::endl;
+	std::cerr<<"  --help            Show help menu."<<std::endl;
+	std::cerr<<"  --wof, -w         Print in wof format."<<std::endl;
 }
 
 int main(int argc,char* argv[])
@@ -20,7 +20,7 @@ int main(int argc,char* argv[])
 		for(int ii=1;ii<argc;++ii)
 		{
 			std::string cli(argv[ii]);
-			if(cli=="--help"||cli=="-h")
+			if(cli=="--help")
 			{
 				show_help();
 				return 1;

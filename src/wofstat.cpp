@@ -5,6 +5,15 @@
 #include <sstream>
 #include <stdexcept>
 
+bool operator==(const wofstat_t& lhs,const wofstat_t& rhs)
+{
+	return (lhs.proto==rhs.proto&&
+		lhs.laddr==rhs.laddr&&lhs.lport==rhs.lport&&
+		lhs.faddr==rhs.faddr&&lhs.fport==rhs.fport&&
+		lhs.state==rhs.state&&
+		lhs.pid==rhs.pid);
+}
+
 void print_human(const wofstat_t& wofstat,std::vector<size_t> cols)
 {
 	if(cols.size()<4)
@@ -38,15 +47,19 @@ void print_human(const wofstat_t& wofstat,std::vector<size_t> cols)
 		std::endl;
 }
 
-void print_human(const wofstat_list_t& wofstats)
+void print_human(const wofstat_list_t& wofstats,bool print_header)
 {
 	size_t pad=1;
-	std::vector<size_t> cols;
-	cols.push_back(5+pad);
-	cols.push_back(15+pad);
-	cols.push_back(15+pad);
-	cols.push_back(5+pad);
-	cols.push_back(3+pad);
+	static bool create_cols=true;
+	static std::vector<size_t> cols;
+	if(create_cols)
+	{
+		cols.push_back(5+pad);
+		cols.push_back(15+pad);
+		cols.push_back(15+pad);
+		cols.push_back(5+pad);
+		cols.push_back(3+pad);
+	}
 	for(size_t ii=0;ii<wofstats.size();++ii)
 	{
 		if(wofstats[ii].proto.size()+pad>cols[0])
@@ -60,13 +73,14 @@ void print_human(const wofstat_list_t& wofstats)
 		if(wofstats[ii].pid.size()+pad>cols[4])
 			cols[4]=wofstats[ii].pid.size()+pad;
 	}
-	std::cerr<<
-		std::setw(cols[0])<<"proto"<<
-		std::setw(cols[1])<<"local address"<<
-		std::setw(cols[2])<<"foreign address"<<
-		std::setw(cols[3])<<"state"<<
-		std::setw(cols[4])<<"pid"<<
-		std::endl;
+	if(print_header)
+		std::cerr<<
+			std::setw(cols[0])<<"proto"<<
+			std::setw(cols[1])<<"local address"<<
+			std::setw(cols[2])<<"foreign address"<<
+			std::setw(cols[3])<<"state"<<
+			std::setw(cols[4])<<"pid"<<
+			std::endl;
 	for(size_t ii=0;ii<wofstats.size();++ii)
 		print_human(wofstats[ii],cols);
 }

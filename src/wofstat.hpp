@@ -16,12 +16,14 @@ struct wofstat_t
 	std::string pid;
 };
 
+bool operator==(const wofstat_t& lhs,const wofstat_t& rhs);
+
 typedef std::vector<wofstat_t> wofstat_list_t;
 
 wofstat_list_t wofstat();
 
-void print_human(const wofstat_t& wofstat);
-void print_human(const wofstat_list_t& wofstats);
+void print_human(const wofstat_t& wofstat,std::vector<size_t> cols=std::vector<size_t>());
+void print_human(const wofstat_list_t& wofstats,bool print_header=true);
 void print_wof(const wofstat_t& wofstat);
 void print_wof(const wofstat_list_t& wofstats);
 

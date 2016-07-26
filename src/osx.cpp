@@ -1,8 +1,6 @@
 //Tested on:
 //	OSX 10.11.2 (g++)
 
-//TODO: Check memory allocs and frees, cleanup, sort tcp and udp output, make errors better.
-
 #include "wofstat.hpp"
 
 #include <sys/sysctl.h>
